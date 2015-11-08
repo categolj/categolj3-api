@@ -12,6 +12,11 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 @Data
 public class Entry implements Serializable {
+
+    public static final String INDEX_NAME = "entries";
+
+    public static final String DOC_TYPE = "entry";
+
     private Long entryId;
 
     private String content;
