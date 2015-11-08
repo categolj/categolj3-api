@@ -1,4 +1,4 @@
-package am.ik.categolj3;
+package am.ik.categolj3.git;
 
 import java.util.concurrent.CompletableFuture;
 

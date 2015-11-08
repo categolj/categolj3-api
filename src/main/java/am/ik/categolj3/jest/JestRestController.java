@@ -1,4 +1,4 @@
-package am.ik.categolj3;
+package am.ik.categolj3.jest;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/indexer")
-public class IndexerRestController {
+@RequestMapping("api/jest")
+public class JestRestController {
     @Autowired
-    Indexer indexer;
+    JestIndexer indexer;
 
     @RequestMapping(path = "reindex")
     CompletableFuture<Void> reindex() {

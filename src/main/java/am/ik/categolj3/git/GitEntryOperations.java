@@ -1,5 +1,7 @@
-package am.ik.categolj3;
+package am.ik.categolj3.git;
 
+import am.ik.categolj3.entry.Entry;
+import am.ik.categolj3.entry.SimpleEntryOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

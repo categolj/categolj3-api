@@ -1,9 +1,11 @@
-package am.ik.categolj3;
+package am.ik.categolj3.jest;
 
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import am.ik.categolj3.entry.Entry;
+import am.ik.categolj3.entry.SearchEntryOperations;
 import lombok.extern.slf4j.Slf4j;
 
 import org.elasticsearch.search.builder.SearchSourceBuilder;

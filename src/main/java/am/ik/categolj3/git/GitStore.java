@@ -1,4 +1,4 @@
-package am.ik.categolj3;
+package am.ik.categolj3.git;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +35,8 @@ import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
+
+import am.ik.categolj3.entry.Entry;
 
 @Component
 @Slf4j
@@ -166,7 +168,7 @@ public class GitStore {
         }
     }
 
-    List<File> getContents() {
+    public List<File> getContents() {
         String contentsDir = gitProperties.getBaseDir().getAbsolutePath() + "/"
                 + gitProperties.getContentDir();
         File[] files = new File(contentsDir).listFiles(f -> Entry.isPublic(f

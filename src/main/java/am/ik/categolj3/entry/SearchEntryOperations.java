@@ -1,4 +1,4 @@
-package am.ik.categolj3;
+package am.ik.categolj3.entry;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

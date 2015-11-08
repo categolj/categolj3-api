@@ -1,10 +1,12 @@
-package am.ik.categolj3;
+package am.ik.categolj3.jest;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import am.ik.categolj3.entry.Entry;
+import am.ik.categolj3.git.GitStore;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,7 @@ import io.searchbox.core.Index;
 
 @Component
 @Slf4j
-public class Indexer {
+public class JestIndexer {
     @Autowired
     GitStore gitStore;
 
