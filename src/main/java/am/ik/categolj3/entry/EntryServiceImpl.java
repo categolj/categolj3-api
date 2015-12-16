@@ -36,6 +36,11 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
+    public Page<Entry> findByQuery(String keyword, Pageable pageable) {
+        return this.searchEntryOperations.findByQuery(keyword, pageable);
+    }
+
+    @Override
     public Entry findOne(Long entryId) {
         return this.simpleEntryOperations.findOne(entryId);
     }

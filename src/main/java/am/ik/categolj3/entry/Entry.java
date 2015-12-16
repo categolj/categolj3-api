@@ -1,6 +1,7 @@
 package am.ik.categolj3.entry;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import io.searchbox.annotations.JestId;
 import lombok.Data;
 
 import java.io.*;
@@ -16,6 +17,7 @@ public class Entry implements Serializable {
 
     public static final String DOC_TYPE = "entry";
 
+    @JestId
     private Long entryId;
 
     private String content;

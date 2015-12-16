@@ -9,8 +9,10 @@ import io.searchbox.core.Search;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,35 +30,62 @@ public class JestSearchEntryOperations implements SearchEntryOperations {
 
     @Override
     public Page<Entry> findAll(Pageable pageable) {
+        QueryBuilder query = QueryBuilders.matchAllQuery();
+        return search(query, pageable);
+    }
+
+    @Override
+    public Page<Entry> findByTag(String tag, Pageable pageable) {
+        QueryBuilder query = QueryBuilders.termQuery("frontMatter.tags", tag);
+        return search(query, pageable);
+    }
+
+    @Override
+    public Page<Entry> findByCategories(List<String> categories, Pageable pageable) {
+        QueryBuilder query = QueryBuilders.termsQuery("frontMatter.categories", categories)
+                .minimumMatch(categories.size());
+        return search(query, pageable);
+    }
+
+    @Override
+    public Page<Entry> findByCreatedBy(String user, Pageable pageable) {
+        QueryBuilder query = QueryBuilders.termQuery("updated.name", user);
+        return search(query, pageable);
+    }
+
+    @Override
+    public Page<Entry> findByQuery(String q, Pageable pageable) {
+        QueryBuilder query = QueryBuilders.simpleQueryStringQuery(q);
+        return search(query, pageable);
+    }
+
+    Page<Entry> search(QueryBuilder query, Pageable pageable) {
         try {
             List<Entry> content = ((JestResult) jestClient.execute(
-                    new Search.Builder(new SearchSourceBuilder().from(pageable
-                            .getOffset()).size(pageable.getPageSize())
-                            .toString()).addIndex(Entry.INDEX_NAME).addType(
-                            Entry.DOC_TYPE).build()))
+                    new Search.Builder(
+                            new SearchSourceBuilder()
+                                    .query(query)
+                                    .sort("updated.date", SortOrder.DESC)
+                                    .sort("entryId", SortOrder.DESC)
+                                    .from(pageable.getOffset())
+                                    .size(pageable.getPageSize())
+                                    .toString())
+                            .addIndex(Entry.INDEX_NAME)
+                            .addType(Entry.DOC_TYPE)
+                            .build()))
                     .getSourceAsObjectList(Entry.class);
-            long count = jestClient.execute(new Count.Builder().addIndex(
-                    Entry.INDEX_NAME).addType(Entry.DOC_TYPE).build())
+            long count = jestClient.execute(
+                    new Count.Builder()
+                            .query(new SearchSourceBuilder()
+                                    .query(query).toString())
+                            .addIndex(Entry.INDEX_NAME)
+                            .addType(Entry.DOC_TYPE)
+                            .build())
                     .getCount().longValue();
             return new PageImpl<>(content, pageable, count);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    @Override
-    public Page<Entry> findByTag(String tag, Pageable pageable) {
-        return null;
-    }
-
-    @Override
-    public Page<Entry> findByCategories(List<String> categories, Pageable pageable) {
-        return null;
-    }
-
-    @Override
-    public Page<Entry> findByCreatedBy(String user, Pageable pageable) {
-        return null;
     }
 
     @PostConstruct

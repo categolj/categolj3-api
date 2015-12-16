@@ -118,7 +118,7 @@ public class GitStore {
                     }
                 });
                 if (changed.get()) {
-                    this.applicationContext.publishEvent(new GitChangedEvent(OffsetDateTime.now()));
+                    this.applicationContext.publishEvent(new GitEntryChangedEvent(OffsetDateTime.now()));
                 } else {
                     log.info("No change");
                 }

@@ -14,4 +14,5 @@ public interface SearchEntryOperations {
 
     Page<Entry> findByCreatedBy(String user, Pageable pageable);
 
+    Page<Entry> findByQuery(String q, Pageable pageable);
 }

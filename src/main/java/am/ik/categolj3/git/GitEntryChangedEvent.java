@@ -6,6 +6,6 @@ import java.io.Serializable;
 import java.time.OffsetDateTime;
 
 @Data
-public class GitChangedEvent implements Serializable {
+public class GitEntryChangedEvent implements Serializable {
     private final OffsetDateTime time;
 }
