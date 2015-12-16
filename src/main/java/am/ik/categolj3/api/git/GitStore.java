@@ -3,7 +3,7 @@ package am.ik.categolj3.api.git;
 import am.ik.categolj3.api.entry.Author;
 import am.ik.categolj3.api.entry.Entry;
 import com.google.common.collect.Iterables;
-import javafx.util.Pair;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
@@ -243,5 +243,11 @@ public class GitStore {
         } catch (GitAPIException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @Data
+    public static class Pair<K, V> {
+        private final K key;
+        private final V value;
     }
 }
