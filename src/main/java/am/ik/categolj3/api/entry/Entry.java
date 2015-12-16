@@ -22,9 +22,7 @@ public class Entry implements Serializable {
 
     private String content;
 
-    @JsonUnwrapped(prefix = "created")
     private Author created;
-    @JsonUnwrapped(prefix = "updated")
     private Author updated;
 
     @JsonUnwrapped

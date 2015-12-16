@@ -33,15 +33,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -63,8 +58,6 @@ public class GitStore {
     Git git;
 
     AtomicReference<ObjectId> currentHead = new AtomicReference<>();
-
-    public static final ZoneOffset offset = ZonedDateTime.now().getOffset();
 
     public Entry get(Long entryId) {
         return this.entryCache.get(entryId, Entry.class);
@@ -93,7 +86,8 @@ public class GitStore {
                 List<DiffEntry> list = diffFormatter.scan(fromCommit.getTree(),
                         toCommit.getTree());
 
-                AtomicBoolean changed = new AtomicBoolean(false);
+                List<Long> deleted = new ArrayList<>();
+                List<Entry> updated = new ArrayList<>();
                 list.forEach(diff -> {
                     log.info("[{}]\tnew={}\told={}", diff.getChangeType(), diff
                             .getNewPath(), diff.getOldPath());
@@ -104,23 +98,23 @@ public class GitStore {
                             Long entryId = Entry.parseEntryId(path);
                             log.info("evict Entry({})", entryId);
                             this.entryCache.evict(entryId);
-                            changed.set(true);
+                            deleted.add(entryId);
                         }
                     }
                     if (diff.getNewPath() != null) {
                         Path path = Paths.get(gitProperties.getBaseDir()
                                 .getAbsolutePath() + "/" + diff.getNewPath());
-                        Entry.loadFromFile(path).ifPresent(entry -> {
+                        this.loadEntry(path).ifPresent(entry -> {
                             log.info("put Entry({})", entry.getEntryId());
                             this.entryCache.put(entry.getEntryId(), entry);
-                            changed.set(true);
+                            updated.add(entry);
                         });
                     }
                 });
-                if (changed.get()) {
-                    this.applicationContext.publishEvent(new GitEntryChangedEvent(OffsetDateTime.now()));
-                } else {
+                if (deleted.isEmpty() && updated.isEmpty()) {
                     log.info("No change");
+                } else {
+                    this.applicationContext.publishEvent(new GitEntryEvents.BulkUpdateEvent(deleted, updated, OffsetDateTime.now()));
                 }
             } finally {
                 walk.dispose();
@@ -142,12 +136,29 @@ public class GitStore {
         }
     }
 
+    public List<Entry> loadEntries() {
+        return getContentFiles().stream()
+                .map(File::toPath)
+                .map(this::loadEntry)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<Entry> loadEntry(Path path) {
+        return Entry.loadFromFile(path)
+                .map(e -> {
+                    Pair<Author, Author> author = getAuthor(path);
+                    e.setCreated(author.getKey());
+                    e.setUpdated(author.getValue());
+                    return e;
+                });
+    }
+
     public void forceRefreshAll() {
-        for (File f : this.getContents()) {
-            Entry.loadFromFile(f.toPath()).ifPresent(entry -> {
-                entryCache.put(entry.getEntryId(), entry);
-            });
-        }
+        loadEntries().forEach(entry -> {
+            entryCache.put(entry.getEntryId(), entry);
+        });
     }
 
     @PostConstruct
@@ -185,7 +196,7 @@ public class GitStore {
         }
     }
 
-    public List<File> getContents() {
+    public List<File> getContentFiles() {
         String contentsDir = gitProperties.getBaseDir().getAbsolutePath() + "/"
                 + gitProperties.getContentDir();
         File[] files = new File(contentsDir).listFiles(f -> Entry.isPublic(f
@@ -197,9 +208,9 @@ public class GitStore {
         Path p = gitProperties.getBaseDir().toPath().relativize(path);
         try {
             Iterable<RevCommit> commits = git.log().addPath(p.toString()).call();
+            RevCommit updated = Iterables.getFirst(commits, null);
             RevCommit created = Iterables.getLast(commits);
-            RevCommit updated = Iterables.getFirst(commits, created);
-            return new Pair<>(author(created), author(updated));
+            return new Pair<>(author(created), author(updated == null ? created : updated));
         } catch (GitAPIException e) {
             throw new IllegalStateException(e);
         }

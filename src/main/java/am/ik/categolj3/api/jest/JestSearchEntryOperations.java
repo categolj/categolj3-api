@@ -49,7 +49,7 @@ public class JestSearchEntryOperations implements SearchEntryOperations {
 
     @Override
     public Page<Entry> findByCreatedBy(String user, Pageable pageable) {
-        QueryBuilder query = QueryBuilders.termQuery("updated.name", user);
+        QueryBuilder query = QueryBuilders.matchQuery("updated.name", user);
         return search(query, pageable);
     }
 

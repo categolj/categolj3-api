@@ -1,6 +1,6 @@
 package am.ik.categolj3.api.jest;
 
-import am.ik.categolj3.api.git.GitEntryChangedEvent;
+import am.ik.categolj3.api.git.GitEntryEvents;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -13,8 +13,14 @@ public class JestSync {
     JestIndexer indexer;
 
     @EventListener
-    public void sync(GitEntryChangedEvent e) {
-        log.info("Syncing Jest ...");
+    public void sync(GitEntryEvents.RefreshEvent e) {
+        log.info("Syncing Jest ... {}", e);
         indexer.reindex();
+    }
+
+    @EventListener
+    public void bulkUpdate(GitEntryEvents.BulkUpdateEvent e) {
+        log.info("Bulk update ... {}", e);
+        indexer.bulkUpdate(e.getDeleteIds(), e.getUpdateEntries());
     }
 }
