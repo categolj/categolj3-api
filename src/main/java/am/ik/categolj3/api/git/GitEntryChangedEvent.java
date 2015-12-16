@@ -1,4 +1,4 @@
-package am.ik.categolj3.git;
+package am.ik.categolj3.api.git;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package am.ik.categolj3.entry;
+package am.ik.categolj3.api.entry;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

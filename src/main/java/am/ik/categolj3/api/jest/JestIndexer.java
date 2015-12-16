@@ -1,8 +1,8 @@
-package am.ik.categolj3.jest;
+package am.ik.categolj3.api.jest;
 
-import am.ik.categolj3.entry.Author;
-import am.ik.categolj3.entry.Entry;
-import am.ik.categolj3.git.GitStore;
+import am.ik.categolj3.api.entry.Author;
+import am.ik.categolj3.api.entry.Entry;
+import am.ik.categolj3.api.git.GitStore;
 import io.searchbox.client.JestClient;
 import io.searchbox.core.Bulk;
 import io.searchbox.core.Index;

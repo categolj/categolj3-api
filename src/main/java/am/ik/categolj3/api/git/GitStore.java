@@ -1,7 +1,7 @@
-package am.ik.categolj3.git;
+package am.ik.categolj3.api.git;
 
-import am.ik.categolj3.entry.Author;
-import am.ik.categolj3.entry.Entry;
+import am.ik.categolj3.api.entry.Author;
+import am.ik.categolj3.api.entry.Entry;
 import com.google.common.collect.Iterables;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;

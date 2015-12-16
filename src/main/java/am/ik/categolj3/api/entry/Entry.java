@@ -1,4 +1,4 @@
-package am.ik.categolj3.entry;
+package am.ik.categolj3.api.entry;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.searchbox.annotations.JestId;

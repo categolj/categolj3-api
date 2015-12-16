@@ -1,6 +1,6 @@
-package am.ik.categolj3.jest;
+package am.ik.categolj3.api.jest;
 
-import am.ik.categolj3.git.GitEntryChangedEvent;
+import am.ik.categolj3.api.git.GitEntryChangedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;

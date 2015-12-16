@@ -1,4 +1,4 @@
-package am.ik.categolj3.jest;
+package am.ik.categolj3.api.jest;
 
 import java.util.concurrent.CompletableFuture;
 

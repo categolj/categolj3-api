@@ -1,7 +1,7 @@
-package am.ik.categolj3.jest;
+package am.ik.categolj3.api.jest;
 
-import am.ik.categolj3.entry.Entry;
-import am.ik.categolj3.entry.SearchEntryOperations;
+import am.ik.categolj3.api.entry.Entry;
+import am.ik.categolj3.api.entry.SearchEntryOperations;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.core.Count;

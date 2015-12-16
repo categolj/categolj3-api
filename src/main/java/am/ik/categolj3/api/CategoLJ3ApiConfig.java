@@ -1,38 +1,34 @@
-package am.ik.categolj3;
+package am.ik.categolj3.api;
 
+import am.ik.categolj3.api.jest.JestProperties;
 import com.google.gson.*;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.config.HttpClientConfig;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
-@SpringBootApplication
+@Configuration
+@ComponentScan
 @EnableCaching
 @EnableAsync
 @EnableScheduling
-public class CategoLJ3 {
-
-    public static void main(String[] args) {
-        SpringApplication.run(CategoLJ3.class, args);
-    }
+public class CategoLJ3ApiConfig {
 
     @Bean
-    JestClient jestClient(
-            @Value("${jest.connection-url}") String connectionUrl) {
+    JestClient jestClient(JestProperties jestProperties) {
         JestClientFactory factory = new JestClientFactory();
-        factory.setHttpClientConfig(new HttpClientConfig.Builder(connectionUrl)
+        factory.setHttpClientConfig(new HttpClientConfig.Builder(jestProperties.getConnectionUrl())
                 .multiThreaded(true)
-                .connTimeout(10000)
-                .readTimeout(10000)
+                .connTimeout(jestProperties.getConnectionTimeout())
+                .readTimeout(jestProperties.getReadTimeout())
                 .gson(gson())
                 .build());
         return factory.getObject();
