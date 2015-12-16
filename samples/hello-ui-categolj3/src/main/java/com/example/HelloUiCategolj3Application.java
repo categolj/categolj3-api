@@ -48,6 +48,7 @@ public class HelloUiCategolj3Application {
     Marked marked() {
         return new MarkedBuilder()
                 .breaks(true)
+                .sanitize(true)
                 .build();
     }
 }

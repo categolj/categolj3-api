@@ -10,8 +10,8 @@
     <article th:each="entry : ${page.content}">
         <h2 th:text="${entry.frontMatter.title}">Hello!</h2>
         <p th:inline="text">updated at [[${entry.updated.date}]] by [[${entry.updated.name}]] created at [[${entry.created.date}]] by [[${entry.created.name}]]</p>
-        <p th:inline="text">category: [[${entry.frontMatter.categories}]]</p>
-        <p th:inline="text">tags: [[${entry.frontMatter.tags}]]</p>
+        <p th:inline="text">category: [[${#strings.listJoin(entry.frontMatter.categories,'::')}]]</p>
+        <p th:inline="text">tags: [[${#strings.listJoin(entry.frontMatter.tags,',')}]]</p>
         <p th:utext="${@marked.marked(entry.content)}">Content</p>
     </article>
 </div>
