@@ -6,7 +6,6 @@ import io.searchbox.client.JestClient;
 import io.searchbox.core.Bulk;
 import io.searchbox.core.Delete;
 import io.searchbox.core.Index;
-import io.searchbox.core.Update;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -75,6 +75,11 @@ public class JestIndexer {
         } catch (Exception e) {
             log.warn("[" + count + "] bulkUpdate failure delete=" + deleteIds + ", update=" + updateEntries, e);
             if (++count < 5) {
+                try {
+                    TimeUnit.SECONDS.sleep(count);
+                } catch (InterruptedException e1) {
+                    Thread.currentThread().interrupt();
+                }
                 bulkUpdateRecursively(deleteIds, updateEntries, count);
             } else {
                 throw new IllegalStateException("failed delete=" + deleteIds + ", update=" + updateEntries, e);
