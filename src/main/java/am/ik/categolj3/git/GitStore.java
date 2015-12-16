@@ -1,23 +1,10 @@
 package am.ik.categolj3.git;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
+import am.ik.categolj3.entry.Author;
+import am.ik.categolj3.entry.Entry;
+import com.google.common.collect.Iterables;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
-
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
@@ -32,11 +19,29 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
 
-import am.ik.categolj3.entry.Entry;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @Slf4j
@@ -49,6 +54,9 @@ public class GitStore {
 
     @Autowired
     GitPullTask gitPullTask;
+
+    @Autowired
+    ApplicationContext applicationContext;
 
     Cache entryCache;
 
@@ -79,35 +87,44 @@ public class GitStore {
             DiffFormatter diffFormatter = new DiffFormatter(System.out);
             diffFormatter.setRepository(repository);
             RevWalk walk = new RevWalk(repository);
+            try {
+                RevCommit fromCommit = walk.parseCommit(oldHead);
+                RevCommit toCommit = walk.parseCommit(newHead);
+                List<DiffEntry> list = diffFormatter.scan(fromCommit.getTree(),
+                        toCommit.getTree());
 
-            RevCommit fromCommit = walk.parseCommit(oldHead);
-            RevCommit toCommit = walk.parseCommit(newHead);
-            List<DiffEntry> list = diffFormatter.scan(fromCommit.getTree(),
-                    toCommit.getTree());
-
-            list.forEach(diff -> {
-                log.info("[{}]\tnew={}\told={}", diff.getChangeType(), diff
-                        .getNewPath(), diff.getOldPath());
-                if (diff.getOldPath() != null) {
-                    Path path = Paths.get(gitProperties.getBaseDir()
-                            .getAbsolutePath() + "/" + diff.getOldPath());
-                    if (Entry.isPublic(path)) {
-                        Long entryId = Entry.parseEntryId(path);
-                        log.info("evict Entry({})", entryId);
-                        this.entryCache.evict(entryId);
+                AtomicBoolean changed = new AtomicBoolean(false);
+                list.forEach(diff -> {
+                    log.info("[{}]\tnew={}\told={}", diff.getChangeType(), diff
+                            .getNewPath(), diff.getOldPath());
+                    if (diff.getOldPath() != null) {
+                        Path path = Paths.get(gitProperties.getBaseDir()
+                                .getAbsolutePath() + "/" + diff.getOldPath());
+                        if (Entry.isPublic(path)) {
+                            Long entryId = Entry.parseEntryId(path);
+                            log.info("evict Entry({})", entryId);
+                            this.entryCache.evict(entryId);
+                            changed.set(true);
+                        }
                     }
+                    if (diff.getNewPath() != null) {
+                        Path path = Paths.get(gitProperties.getBaseDir()
+                                .getAbsolutePath() + "/" + diff.getNewPath());
+                        Entry.loadFromFile(path).ifPresent(entry -> {
+                            log.info("put Entry({})", entry.getEntryId());
+                            this.entryCache.put(entry.getEntryId(), entry);
+                            changed.set(true);
+                        });
+                    }
+                });
+                if (changed.get()) {
+                    this.applicationContext.publishEvent(new GitChangedEvent(OffsetDateTime.now()));
+                } else {
+                    log.info("No change");
                 }
-                if (diff.getNewPath() != null) {
-                    Path path = Paths.get(gitProperties.getBaseDir()
-                            .getAbsolutePath() + "/" + diff.getNewPath());
-                    Entry.loadFromFile(path).ifPresent(entry -> {
-                        log.info("put Entry({})", entry.getEntryId());
-                        this.entryCache.put(entry.getEntryId(), entry);
-                    });
-                }
-            });
-
-            walk.dispose();
+            } finally {
+                walk.dispose();
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } catch (Exception e) {
@@ -174,6 +191,25 @@ public class GitStore {
         File[] files = new File(contentsDir).listFiles(f -> Entry.isPublic(f
                 .toPath()));
         return files == null ? Collections.emptyList() : Arrays.asList(files);
+    }
+
+    public Pair<Author, Author> getAuthor(Path path) {
+        Path p = gitProperties.getBaseDir().toPath().relativize(path);
+        try {
+            Iterable<RevCommit> commits = git.log().addPath(p.toString()).call();
+            RevCommit created = Iterables.getLast(commits);
+            RevCommit updated = Iterables.getFirst(commits, created);
+            return new Pair<>(author(created), author(updated));
+        } catch (GitAPIException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    Author author(RevCommit commit) {
+        String name = commit != null ? commit.getAuthorIdent().getName() : "";
+        Date date = commit != null ? commit.getAuthorIdent().getWhen() : new Date();
+        OffsetDateTime o = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        return new Author(name, o);
     }
 
     Git getGitDirectory() {

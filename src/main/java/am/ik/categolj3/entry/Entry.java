@@ -1,14 +1,13 @@
 package am.ik.categolj3.entry;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import lombok.Data;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-
-import lombok.Data;
-
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 @Data
 public class Entry implements Serializable {
@@ -20,6 +19,11 @@ public class Entry implements Serializable {
     private Long entryId;
 
     private String content;
+
+    @JsonUnwrapped(prefix = "created")
+    private Author created;
+    @JsonUnwrapped(prefix = "updated")
+    private Author updated;
 
     @JsonUnwrapped
     private FrontMatter frontMatter;
@@ -49,7 +53,7 @@ public class Entry implements Serializable {
                     if (FrontMatter.SEPARATOR.equals(firstLine)) {
                         for (String line = reader.readLine(); line != null
                                 && !FrontMatter.SEPARATOR.equals(
-                                        line); line = reader.readLine()) {
+                                line); line = reader.readLine()) {
                             out.append(line);
                             out.append(System.lineSeparator());
                         }
@@ -63,7 +67,7 @@ public class Entry implements Serializable {
                     final StringBuilder out = new StringBuilder();
                     for (String line = reader
                             .readLine(); line != null; line = reader
-                                    .readLine()) {
+                            .readLine()) {
                         out.append(line);
                         out.append(System.lineSeparator());
                     }
