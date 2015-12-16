@@ -36,6 +36,11 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
+    public Page<Entry> findByUpdatedBy(String user, Pageable pageable) {
+        return this.searchEntryOperations.findByUpdatedBy(user, pageable);
+    }
+
+    @Override
     public Page<Entry> findByQuery(String keyword, Pageable pageable) {
         return this.searchEntryOperations.findByQuery(keyword, pageable);
     }

@@ -33,6 +33,11 @@ public class EntryRestController {
         return entryService.findByCreatedBy(createdBy, pageable);
     }
 
+    @RequestMapping(path = "users/{updatedBy}/entries", method = RequestMethod.GET, params = "updated")
+    Page<Entry> getEntriesByUpdatedBy(@PageableDefault Pageable pageable, @PathVariable String updatedBy) {
+        return entryService.findByUpdatedBy(updatedBy, pageable);
+    }
+
     @RequestMapping(path = "tags/{tag}/entries", method = RequestMethod.GET)
     Page<Entry> getEntriesByTag(@PageableDefault Pageable pageable, @PathVariable String tag) {
         return entryService.findByTag(tag, pageable);
