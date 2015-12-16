@@ -5,6 +5,7 @@ import com.google.gson.*;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.config.HttpClientConfig;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -23,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 public class CategoLJ3ApiConfig {
 
     @Bean
+    @ConditionalOnMissingBean
     JestClient jestClient(JestProperties jestProperties) {
         JestClientFactory factory = new JestClientFactory();
         factory.setHttpClientConfig(new HttpClientConfig.Builder(jestProperties.getConnectionUrl())
