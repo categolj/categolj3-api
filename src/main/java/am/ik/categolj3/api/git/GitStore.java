@@ -2,6 +2,8 @@ package am.ik.categolj3.api.git;
 
 import am.ik.categolj3.api.entry.Author;
 import am.ik.categolj3.api.entry.Entry;
+import am.ik.categolj3.api.jest.JestIndexer;
+import am.ik.categolj3.api.jest.JestProperties;
 import com.google.common.collect.Iterables;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +54,12 @@ public class GitStore {
 
     @Autowired
     ApplicationContext applicationContext;
+
+    @Autowired
+    JestProperties jestProperties;
+
+    @Autowired
+    JestIndexer indexer;
 
     Cache entryCache;
 
@@ -166,7 +174,19 @@ public class GitStore {
         this.entryCache = this.cacheManager.getCache("entry");
         this.git = this.getGitDirectory();
         this.currentHead.set(this.head());
-        this.forceRefreshAll();
+        if (this.gitProperties.isInit()) {
+            this.pull().thenAccept(r -> {
+                this.forceRefreshAll();
+                if (this.jestProperties.isInit()) {
+                    this.indexer.reindex();
+                }
+            });
+        } else {
+            this.forceRefreshAll();
+            if (this.jestProperties.isInit()) {
+                this.indexer.reindex();
+            }
+        }
     }
 
     @PreDestroy

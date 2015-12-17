@@ -13,7 +13,7 @@ public class GitRestController {
     @Autowired
     GitStore gitStore;
 
-    @RequestMapping(path = "pull", method = RequestMethod.GET)
+    @RequestMapping(path = "pull")
     CompletableFuture<String> pull() {
         return gitStore.pull().thenApply(r -> {
             return r.toString();
