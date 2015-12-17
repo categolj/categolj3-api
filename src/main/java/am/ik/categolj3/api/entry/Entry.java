@@ -2,7 +2,10 @@ package am.ik.categolj3.api.entry;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.searchbox.annotations.JestId;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +14,9 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Entry implements Serializable {
 
     public static final String INDEX_NAME = "entries";

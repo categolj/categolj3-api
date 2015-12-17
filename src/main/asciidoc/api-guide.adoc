@@ -27,3 +27,16 @@ include::{snippets}/get-entries/http-request.adoc[]
 
 include::{snippets}/get-entries/http-response.adoc[]
 
+=== Get entries with paging
+
+==== Example request
+
+include::{snippets}/get-entries-page1/curl-request.adoc[]
+
+include::{snippets}/get-entries-page1/http-request.adoc[]
+
+==== Example response
+
+include::{snippets}/get-entries-page1/http-response.adoc[]
+
+

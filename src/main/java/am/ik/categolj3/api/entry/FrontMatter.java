@@ -1,8 +1,6 @@
 package am.ik.categolj3.api.entry;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.Serializable;
@@ -11,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class FrontMatter implements Serializable {
     private String title;
 
