@@ -10,5 +10,5 @@ import org.springframework.stereotype.Component;
 @Data
 public class EntryProperties {
     @NotEmpty
-    private String categoriesSeparator;
+    private String categoriesSeparator = ",";
 }

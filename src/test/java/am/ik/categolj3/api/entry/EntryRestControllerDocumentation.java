@@ -35,7 +35,6 @@ public class EntryRestControllerDocumentation {
     @Before
     public void before() throws Exception {
         EntryProperties properties = new EntryProperties();
-        properties.setCategoriesSeparator(",");
         EntryService entryService = mock(EntryService.class);
         when(entryService.findAll((Pageable) anyObject())).thenReturn(new PageImpl<Entry>(Arrays.asList(new Entry(), new Entry())));
 
