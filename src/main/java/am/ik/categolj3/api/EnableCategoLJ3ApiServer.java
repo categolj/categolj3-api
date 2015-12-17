@@ -8,5 +8,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Import(CategoLJ3ApiConfig.class)
-public @interface EnableCategoLJ3Api {
+public @interface EnableCategoLJ3ApiServer {
 }

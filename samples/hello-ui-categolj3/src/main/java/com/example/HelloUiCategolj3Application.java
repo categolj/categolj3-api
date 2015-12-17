@@ -1,6 +1,6 @@
 package com.example;
 
-import am.ik.categolj3.api.EnableCategoLJ3Api;
+import am.ik.categolj3.api.EnableCategoLJ3ApiServer;
 import am.ik.categolj3.api.entry.Entry;
 import am.ik.marked4j.Marked;
 import am.ik.marked4j.MarkedBuilder;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
-@EnableCategoLJ3Api
+@EnableCategoLJ3ApiServer
 @Controller
 public class HelloUiCategolj3Application {
 

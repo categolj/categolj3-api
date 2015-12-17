@@ -1,6 +1,6 @@
 package com.example;
 
-import am.ik.categolj3.api.EnableCategoLJ3Api;
+import am.ik.categolj3.api.EnableCategoLJ3ApiServer;
 import am.ik.categolj3.api.entry.Entry;
 import am.ik.categolj3.api.jest.JestProperties;
 import am.ik.marked4j.Marked;
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication
-@EnableCategoLJ3Api
+@EnableCategoLJ3ApiServer
 @Controller
 public class HelloPwsCategolj3Application {
 
