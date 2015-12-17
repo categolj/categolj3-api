@@ -1,0 +1,29 @@
+= CategoLJ3 API Guide
+Toshiaki Maki;
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+[[resources]]
+= Resources
+
+
+[[resources-entries]]
+== Entries
+
+[[resources-get-entries]]
+=== Get entries
+
+==== Example request
+
+include::{snippets}/get-entries/curl-request.adoc[]
+
+include::{snippets}/get-entries/http-request.adoc[]
+
+==== Example response
+
+include::{snippets}/get-entries/http-response.adoc[]
+
