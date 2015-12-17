@@ -13,4 +13,5 @@ public class JestProperties {
     private String connectionUrl;
     private int connectionTimeout = 10000;
     private int readTimeout = 10000;
+    private boolean init = false;
 }
