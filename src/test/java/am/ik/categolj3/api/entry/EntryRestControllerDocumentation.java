@@ -130,4 +130,38 @@ public class EntryRestControllerDocumentation {
                 .andExpect(jsonPath("number", is(1)))
                 .andDo(document("get-entries-page1"));
     }
+
+    @Test
+    public void getEntriesByTag() throws Exception {
+        when(this.entryService.findByTag(eq("Java"), anyObject()))
+                .thenReturn(new PageImpl<>(Arrays.asList(
+                        Entry.builder()
+                                .entryId(2L)
+                                .content("Spring Boot!")
+                                .frontMatter(FrontMatter.builder()
+                                        .title("Hello Spring Boot")
+                                        .categories(Arrays.asList("Programming", "Java", "Spring", "Boot"))
+                                        .tags(Arrays.asList("Java", "Spring", "SpringBoot"))
+                                        .build())
+                                .created(Author.builder().name("making").date(now).build())
+                                .updated(Author.builder().name("making").date(now).build())
+                                .build(),
+                        Entry.builder()
+                                .entryId(1L)
+                                .content("Java8!")
+                                .frontMatter(FrontMatter.builder()
+                                        .title("Hello Java8")
+                                        .categories(Arrays.asList("Programming", "Java"))
+                                        .tags(Arrays.asList("Java", "Java8", "Stream"))
+                                        .build())
+                                .created(Author.builder().name("making").date(now).build())
+                                .updated(Author.builder().name("making").date(now).build())
+                                .build())));
+        this.mockMvc
+                .perform(get("/api/tags/Java/entries"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("numberOfElements", is(2)))
+                .andExpect(jsonPath("number", is(0)))
+                .andDo(document("get-entries-by-tag"));
+    }
 }

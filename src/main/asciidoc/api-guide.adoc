@@ -17,26 +17,40 @@ Toshiaki Maki;
 [[resources-get-entries]]
 === Get entries
 
-==== Example request
+==== Without paging parameters
+
+===== Example request
 
 include::{snippets}/get-entries/curl-request.adoc[]
 
 include::{snippets}/get-entries/http-request.adoc[]
 
-==== Example response
+===== Example response
 
 include::{snippets}/get-entries/http-response.adoc[]
 
-=== Get entries with paging
+==== With paging parameters
 
-==== Example request
+===== Example request
 
 include::{snippets}/get-entries-page1/curl-request.adoc[]
 
 include::{snippets}/get-entries-page1/http-request.adoc[]
 
-==== Example response
+===== Example response
 
 include::{snippets}/get-entries-page1/http-response.adoc[]
 
+=== Get entries by tag
 
+==== Without paging parameters
+
+===== Example request
+
+include::{snippets}/get-entries-by-tag/curl-request.adoc[]
+
+include::{snippets}/get-entries-by-tag/http-request.adoc[]
+
+===== Example response
+
+include::{snippets}/get-entries-by-tag/http-response.adoc[]
