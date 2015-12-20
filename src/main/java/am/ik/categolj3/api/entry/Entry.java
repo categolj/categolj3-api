@@ -1,6 +1,5 @@
 package am.ik.categolj3.api.entry;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.searchbox.annotations.JestId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,7 +30,6 @@ public class Entry implements Serializable {
     private Author created;
     private Author updated;
 
-    @JsonUnwrapped
     private FrontMatter frontMatter;
 
     public static boolean isPublic(Path file) {

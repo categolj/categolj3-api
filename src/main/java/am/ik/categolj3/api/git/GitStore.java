@@ -157,8 +157,19 @@ public class GitStore {
         return Entry.loadFromFile(path)
                 .map(e -> {
                     Pair<Author, Author> author = getAuthor(path);
-                    e.setCreated(author.getKey());
-                    e.setUpdated(author.getValue());
+                    System.out.println(e.getFrontMatter());
+                    if (e.getFrontMatter() != null && e.getFrontMatter().getDate() != null) {
+                        // ignore created.date if it is set by frontMatter
+                        e.setCreated(new Author(author.getKey().getName(), e.getFrontMatter().getDate()));
+                    } else {
+                        e.setCreated(author.getKey());
+                    }
+                    if (e.getFrontMatter() != null && e.getFrontMatter().getUpdated() != null) {
+                        // ignore updated.date if it is set by frontMatter
+                        e.setUpdated(new Author(author.getValue().getName(), e.getFrontMatter().getUpdated()));
+                    } else {
+                        e.setUpdated(author.getValue());
+                    }
                     return e;
                 });
     }
