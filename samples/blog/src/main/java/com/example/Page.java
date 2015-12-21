@@ -8,8 +8,8 @@ public class Page<T> {
     private String sort;
     private long totalPages;
     private long totalElements;
-    private boolean firstPage;
-    private boolean lastPage;
+    private boolean first;
+    private boolean last;
     private long numberOfElements;
     private int size;
     private int number;
