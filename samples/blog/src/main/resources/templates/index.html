@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>CategoLJ3 Blog</title>
+    <style type="text/css">
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000;
+            font-size: small;
+        }
+
+        article {
+            border: 1px solid #000;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .pagination li {
+            display: inline;
+            margin-left: 5px;
+            font-weight: bold;
+            font-size: large;
+        }
+
+        .pagination li > a {
+            color: #000;
+            font-weight: normal;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .breadcrumb li {
+            display: inline;
+            list-style-type: none;
+            font-size: large;
+        }
+
+        .breadcrumb li:before {
+            content: "::";
+        }
+
+        .breadcrumb li:first-child:before {
+            content: "";
+        }
+
+        .breadcrumb li a {
+            background: no-repeat center right;
+        }
+
+        a, a:visited, a:hover {
+            color: #000;
+        }
+
+        pre > code {
+            font-family: "Monaco", "Courier", monospace;
+            font-size: smaller;
+        }
+
+        code {
+            font-family: "Monaco", "Courier", monospace;
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/highlight/styles/github.css}"/>
+</head>
+<body>
+<div>
+    <h1><a th:href="@{/}">CategoLJ3 Blog</a></h1>
+
+    <section id="main">
+        <div>
+            <article class="article panel panel-box" th:each="entry : ${page.content}">
+                <h3 class="article-title">
+                    <a th:href="@{'/entries/' + ${entry.entryId}}" class="entry-title"
+                       th:text="${entry.frontMatter.title}">Hello</a></h3>
+
+                <p class="article-meta" th:inline="text">updated at [[${entry.updated.date}]] by
+                    [[${entry.updated.name}]] created at
+                    [[${entry.created.date}]] by [[${entry.created.name}]]<br/>
+                    category: [[${#strings.listJoin(entry.frontMatter.categories,'::')}]]<br/>
+                    tags: [[${#strings.listJoin(entry.frontMatter.tags,',')}]]
+                </p>
+
+                <p>
+                    <a th:href="${@gitProperties.uri.replace('.git', '') + '/edit/master/content/' + #numbers.formatInteger(entry.entryId, 5, 'NONE') + '.md'}">Edit</a>
+                    <a th:href="${@gitProperties.uri.replace('.git', '') + '/commits/master/content/' + #numbers.formatInteger(entry.entryId, 5, 'NONE') + '.md'}">History</a>
+                </p>
+
+                <p th:utext="${@marked.marked(entry.content)}">Content</p>
+            </article>
+        </div>
+        <div>
+            <ul class="pagination">
+                <!-- firstPage -->
+                <li class="disabled"><span>&lt;&lt;</span></li>
+                <!-- links -->
+                <li class="active"><span>1</span></li>
+                <li><a class="go-to" data-page="1">2</a></li>
+                <li><a class="go-to" data-page="2">3</a></li>
+                <li><a class="go-to" data-page="3">4</a></li>
+                <li><a class="go-to" data-page="4">5</a></li>
+                <!-- lastPage -->
+                <li><a class="go-last">&gt;&gt;</a></li>
+            </ul>
+        </div>
+    </section>
+</div>
+<script th:src="@{/highlight/highlight.pack.js}"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>
