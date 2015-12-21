@@ -250,7 +250,6 @@ public class GitStore {
     }
 
     Author author(RevCommit commit) {
-        System.out.println(commit);
         String name = commit != null ? commit.getAuthorIdent().getName() : "";
         Date date = commit != null ? commit.getAuthorIdent().getWhen() : new Date();
         OffsetDateTime o = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
