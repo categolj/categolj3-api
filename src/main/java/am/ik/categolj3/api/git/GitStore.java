@@ -157,7 +157,6 @@ public class GitStore {
         return Entry.loadFromFile(path)
                 .map(e -> {
                     Pair<Author, Author> author = getAuthor(path);
-                    System.out.println(e.getFrontMatter());
                     if (e.getFrontMatter() != null && e.getFrontMatter().getDate() != null) {
                         // ignore created.date if it is set by frontMatter
                         e.setCreated(new Author(author.getKey().getName(), e.getFrontMatter().getDate()));
@@ -191,6 +190,9 @@ public class GitStore {
                 if (this.jestProperties.isInit()) {
                     this.indexer.reindex();
                 }
+            }).exceptionally(e -> {
+                log.error("error!", e);
+                return null;
             });
         } else {
             this.forceRefreshAll();
@@ -240,14 +242,15 @@ public class GitStore {
         try {
             Iterable<RevCommit> commits = git.log().addPath(p.toString()).call();
             RevCommit updated = Iterables.getFirst(commits, null);
-            RevCommit created = Iterables.getLast(commits);
-            return new Pair<>(author(created), author(updated == null ? created : updated));
+            RevCommit created = Iterables.getLast(commits, updated);
+            return new Pair<>(author(created), author(updated));
         } catch (GitAPIException e) {
             throw new IllegalStateException(e);
         }
     }
 
     Author author(RevCommit commit) {
+        System.out.println(commit);
         String name = commit != null ? commit.getAuthorIdent().getName() : "";
         Date date = commit != null ? commit.getAuthorIdent().getWhen() : new Date();
         OffsetDateTime o = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());

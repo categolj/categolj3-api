@@ -6,8 +6,9 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -42,10 +43,10 @@ public class FrontMatter implements Serializable {
         frontMatter.setCategories((List<String>) map.computeIfAbsent(
                 "categories", key -> Collections.emptyList()));
         if (map.containsKey("date")) { // published date
-            frontMatter.setDate(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse((String) map.get("date"), OffsetDateTime::from));
+            frontMatter.setDate(OffsetDateTime.ofInstant(((Date) map.get("date")).toInstant(), ZoneId.systemDefault()));
         }
         if (map.containsKey("updated")) { // Updated date
-            frontMatter.setUpdated(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse((String) map.get("updated"), OffsetDateTime::from));
+            frontMatter.setUpdated(OffsetDateTime.ofInstant(((Date) map.get("updated")).toInstant(), ZoneId.systemDefault()));
         }
         return frontMatter;
     }
