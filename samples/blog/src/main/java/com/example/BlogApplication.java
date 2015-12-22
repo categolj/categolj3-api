@@ -4,6 +4,7 @@ import am.ik.categolj3.api.EnableCategoLJ3ApiServer;
 import am.ik.categolj3.api.jest.JestProperties;
 import am.ik.marked4j.Marked;
 import am.ik.marked4j.MarkedBuilder;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.searchbox.client.JestClient;
@@ -14,10 +15,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @SpringBootApplication
 @EnableCategoLJ3ApiServer
@@ -36,10 +33,9 @@ public class BlogApplication {
     @Bean
     JestClient jestClient(JestProperties jestProperties, Gson gson) throws Exception {
         // Using jackson to parse VCAP_SERVICES
-        Map result = new ObjectMapper().readValue(System.getenv("VCAP_SERVICES"), HashMap.class);
+        JsonNode result = new ObjectMapper().readValue(System.getenv("VCAP_SERVICES"), JsonNode.class);
 
-        String connectionUrl = (String) ((Map) ((Map) ((List)
-                result.get("searchly")).get(0)).get("credentials")).get("uri");
+        String connectionUrl = result.get("searchly").get(0).get("credentials").get("uri").asText();
         // Configuration
         HttpClientConfig clientConfig = new HttpClientConfig.Builder(connectionUrl)
                 .multiThreaded(true)

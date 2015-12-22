@@ -1,6 +1,7 @@
 package com.example;
 
 import am.ik.categolj3.api.entry.Entry;
+import am.ik.marked4j.Marked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -21,6 +23,8 @@ public class EntryController {
 
     @Autowired
     RestTemplate restTemplate;
+    @Autowired
+    Marked marked;
 
     final ParameterizedTypeReference<Page<Entry>> typeReference = new ParameterizedTypeReference<Page<Entry>>() {
     };
@@ -58,6 +62,16 @@ public class EntryController {
         Entry entry = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, Entry.class).getBody();
         model.addAttribute("entry", entry);
         return "entry";
+    }
+
+    @RequestMapping(path = "/entries/{entryId}", params = "partial")
+    @ResponseBody
+    String partialById(UriComponentsBuilder builder, @PathVariable("entryId") Long entryId) {
+        UriComponents uri = builder
+                .replacePath("/api/entries/{entryId}")
+                .buildAndExpand(entryId);
+        Entry entry = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, Entry.class).getBody();
+        return marked.marked(entry.getContent());
     }
 
     @RequestMapping(path = "/users/{name}/entries")

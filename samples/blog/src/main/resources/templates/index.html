@@ -75,7 +75,7 @@
         <a href="#/categories" class="button button-mini button-primary">All Categories</a>
         <a href="#/tags" class="button button-mini button-primary">All Tags</a>
     </header>
-    <br />
+    <br/>
     <section id="main">
         <div>
             <article class="article panel panel-box" th:each="entry : ${page.content}">
@@ -98,7 +98,9 @@
                     <a th:href="${@gitProperties.uri.replace('.git', '') + '/commits/master/content/' + #numbers.formatInteger(entry.entryId, 5, 'NONE') + '.md'}">History</a>
                 </p>
 
-                <p th:utext="${@marked.marked(entry.content)}">Content</p>
+                <p>
+                    <button th:onclick="'javascript:loadContent(this, ' + ${entry.entryId} + ');'">Read this article</button>
+                </p>
             </article>
         </div>
         <div>
@@ -109,5 +111,7 @@
 </div>
 <script th:src="@{/highlight/highlight.pack.js}"></script>
 <script>hljs.initHighlightingOnLoad();</script>
+<script th:src="@{/superagent.js}"></script>
+<script th:src="@{/app.js}"></script>
 </body>
 </html>
