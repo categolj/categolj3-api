@@ -89,8 +89,8 @@
                     created at [[${entry.created.date}]] by
                     <a th:href="@{'/users/' + ${entry.created.name} + '/entries'}"
                        th:text="${entry.created.name}"></a><br/>
-                    category: [[${#strings.listJoin(entry.frontMatter.categories,'::')}]]<br/>
-                    tags: [[${#strings.listJoin(entry.frontMatter.tags,',')}]]
+                    category: <span th:utext="${@categoriesRenderer.render(entry.frontMatter.categories)}"></span><br/>
+                    tags: <span th:utext="${@tagRenderer.render(entry.frontMatter.tags)}"></span>
                 </p>
 
                 <p>

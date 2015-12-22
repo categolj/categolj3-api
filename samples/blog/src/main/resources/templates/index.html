@@ -89,8 +89,8 @@
                     created at [[${entry.created.date}]] by
                     <a th:href="@{'/users/' + ${entry.created.name} + '/entries'}"
                        th:text="${entry.created.name}"></a><br/>
-                    category: [[${#strings.listJoin(entry.frontMatter.categories,'::')}]]<br/>
-                    tags: [[${#strings.listJoin(entry.frontMatter.tags,',')}]]
+                    category: <span th:utext="${@categoriesRenderer.render(entry.frontMatter.categories)}"></span><br/>
+                    tags: <span th:utext="${@tagRenderer.render(entry.frontMatter.tags)}"></span>
                 </p>
 
                 <p>
@@ -99,12 +99,13 @@
                 </p>
 
                 <p>
-                    <button th:onclick="'javascript:loadContent(this, ' + ${entry.entryId} + ');'">Read this article</button>
+                    <button th:onclick="'javascript:loadContent(this, ' + ${entry.entryId} + ');'">Read this article
+                    </button>
                 </p>
             </article>
         </div>
         <div>
-            <ul class="pagination" th:utext="${@pager.renderList(page)}">
+            <ul class="pagination" th:utext="${@paginationRenderer.render(page)}">
             </ul>
         </div>
     </section>

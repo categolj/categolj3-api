@@ -74,6 +74,30 @@ public class EntryController {
         return marked.marked(entry.getContent());
     }
 
+    @RequestMapping(path = "/tags/{tag}/entries")
+    String byTag(Model model, UriComponentsBuilder builder, @PathVariable("tag") String tag, @PageableDefault(size = 3) Pageable pageable) {
+        UriComponents uri = builder
+                .replacePath("/api/tags/{tag}/entries")
+                .queryParam("page", pageable.getPageNumber())
+                .queryParam("size", pageable.getPageSize())
+                .buildAndExpand(tag);
+        Page<Entry> entries = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, typeReference).getBody();
+        model.addAttribute("page", entries);
+        return "index";
+    }
+
+    @RequestMapping(path = "/categories/{categories}/entries")
+    String byCategories(Model model, UriComponentsBuilder builder, @PathVariable("categories") String categories, @PageableDefault(size = 3) Pageable pageable) {
+        UriComponents uri = builder
+                .replacePath("/api/categories/{categories}/entries")
+                .queryParam("page", pageable.getPageNumber())
+                .queryParam("size", pageable.getPageSize())
+                .buildAndExpand(categories);
+        Page<Entry> entries = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, typeReference).getBody();
+        model.addAttribute("page", entries);
+        return "index";
+    }
+
     @RequestMapping(path = "/users/{name}/entries")
     String byCreatedBy(Model model, UriComponentsBuilder builder, @PathVariable("name") String name, @PageableDefault(size = 3) Pageable pageable) {
         UriComponents uri = builder

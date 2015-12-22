@@ -1,37 +1,31 @@
-package com.example;
+package com.example.renderer;
 
+import com.example.Page;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 
 @Component
-public class Pager<T> {
+public class PaginationRenderer<T> {
 
-    @Autowired
-    HttpServletRequest request;
-
-    public String renderList(Page<T> page) throws UnsupportedEncodingException {
-        return new PagerRenderer<>(page, new ServletServerHttpRequest(request)).render();
+    public String render(Page<T> page) throws UnsupportedEncodingException {
+        return new Pager<>(page).render();
     }
 
     @Data
-    static class PagerRenderer<T> {
+    static class Pager<T> {
         private final Page<T> page;
-        private final HttpRequest request;
         private final int maxDisplayCount = 5;
 
         String render() throws UnsupportedEncodingException {
             StringBuilder sb = new StringBuilder();
             long current = page.getNumber();
             BeginAndEnd beginAndEnd = calcBeginAndEnd();
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpRequest(request);
+            UriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentRequest();
 
             sb.append("<li");
             if (page.isFirst()) {
