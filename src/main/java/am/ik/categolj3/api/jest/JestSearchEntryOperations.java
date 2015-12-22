@@ -9,6 +9,7 @@ import io.searchbox.core.Search;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -36,26 +37,29 @@ public class JestSearchEntryOperations implements SearchEntryOperations {
 
     @Override
     public Page<Entry> findByTag(String tag, Pageable pageable) {
-        QueryBuilder query = QueryBuilders.termQuery("frontMatter.tags", tag);
+        QueryBuilder query = QueryBuilders.matchQuery("frontMatter.tags", tag)
+                .operator(MatchQueryBuilder.Operator.AND);
         return search(query, pageable);
     }
 
     @Override
     public Page<Entry> findByCategories(List<String> categories, Pageable pageable) {
-        QueryBuilder query = QueryBuilders.termsQuery("frontMatter.categories", categories)
-                .minimumMatch(categories.size());
+        QueryBuilder query = QueryBuilders.matchQuery("frontMatter.categories", categories)
+                .operator(MatchQueryBuilder.Operator.AND);
         return search(query, pageable);
     }
 
     @Override
     public Page<Entry> findByCreatedBy(String user, Pageable pageable) {
-        QueryBuilder query = QueryBuilders.matchQuery("created.name", user);
+        QueryBuilder query = QueryBuilders.matchQuery("created.name", user)
+                .operator(MatchQueryBuilder.Operator.AND);
         return search(query, pageable);
     }
 
     @Override
     public Page<Entry> findByUpdatedBy(String user, Pageable pageable) {
-        QueryBuilder query = QueryBuilders.matchQuery("updated.name", user);
+        QueryBuilder query = QueryBuilders.matchQuery("updated.name", user)
+                .operator(MatchQueryBuilder.Operator.AND);
         return search(query, pageable);
     }
 
