@@ -240,7 +240,7 @@ public class GitStore {
     public Pair<Author, Author> getAuthor(Path path) {
         Path p = gitProperties.getBaseDir().toPath().relativize(path);
         try {
-            Iterable<RevCommit> commits = git.log().addPath(p.toString()).call();
+            Iterable<RevCommit> commits = git.log().addPath(p.toString().replace("\\", "/")).call();
             RevCommit updated = Iterables.getFirst(commits, null);
             RevCommit created = Iterables.getLast(commits, updated);
             return new Pair<>(author(created), author(updated));
