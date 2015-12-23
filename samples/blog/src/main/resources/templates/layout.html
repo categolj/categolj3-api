@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8"/>
+    <title>CategoLJ3 Blog</title>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <link rel="stylesheet" th:href="@{/highlight/styles/github.css}"/>
+</head>
+<body>
+<div>
+    <header>
+        <h1 id="blog-title"><a th:href="@{/}">CategoLJ3 Blog</a></h1>
+
+        <form id="search-form" method="get" class="search" th:action="@{/}">
+            <input name="q" class="search-field" type="search" placeholder="search..." th:value="${param.q != null ? param.q[0] : ''}"/>
+        </form>
+        <a th:href="@{/categories}" class="button button-mini button-primary">All Categories</a>
+        <a th:href="@{/tags}" class="button button-mini button-primary">All Tags</a>
+    </header>
+    <br/>
+    <section id="main">
+        <div layout:fragment="content">Fake</div>
+    </section>
+</div>
+</body>
+</html>

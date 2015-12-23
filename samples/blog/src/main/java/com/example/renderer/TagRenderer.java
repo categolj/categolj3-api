@@ -16,4 +16,9 @@ public class TagRenderer {
                 .map(tag -> "<a href=\"" + builder.replacePath("/tags/{tag}/entries").buildAndExpand(tag) + "\">" + tag + "</a>")
                 .collect(Collectors.joining(", "));
     }
+
+    public String renderOne(String tag) {
+        UriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentContextPath();
+        return "<a href=\"" + builder.replacePath("/tags/{tag}/entries").buildAndExpand(tag) + "\">" + tag + "</a>";
+    }
 }

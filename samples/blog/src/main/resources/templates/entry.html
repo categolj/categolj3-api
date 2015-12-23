@@ -1,109 +1,36 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+      layout:decorator="layout">
 <head>
     <meta charset="UTF-8"/>
     <title>CategoLJ3 Blog</title>
-    <style type="text/css">
-        body {
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            background-color: #FFFFFF;
-            color: #000;
-            font-size: small;
-        }
-
-        article {
-            border: 1px solid #000;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-
-        .pagination li {
-            display: inline;
-            margin-left: 5px;
-            font-weight: bold;
-            font-size: large;
-        }
-
-        .pagination li > a {
-            color: #000;
-            font-weight: normal;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
-        .breadcrumb li {
-            display: inline;
-            list-style-type: none;
-            font-size: large;
-        }
-
-        .breadcrumb li:before {
-            content: "::";
-        }
-
-        .breadcrumb li:first-child:before {
-            content: "";
-        }
-
-        .breadcrumb li a {
-            background: no-repeat center right;
-        }
-
-        a, a:visited, a:hover {
-            color: #000;
-        }
-
-        pre > code {
-            font-family: "Monaco", "Courier", monospace;
-            font-size: smaller;
-        }
-
-        code {
-            font-family: "Monaco", "Courier", monospace;
-        }
-    </style>
-    <link rel="stylesheet" th:href="@{/highlight/styles/github.css}"/>
 </head>
 <body>
-<div>
-    <header>
-        <h1 id="blog-title"><a th:href="@{/}">CategoLJ3 Blog</a></h1>
+<div layout:fragment="content">
+    <article class="article panel panel-box">
+        <h3 class="article-title">
+            <a th:href="@{'/entries/' + ${entry.entryId}}" class="entry-title"
+               th:text="${entry.frontMatter.title}">Hello</a></h3>
 
-        <form id="search-form" method="get" class="search" th:action="@{/}">
-            <input name="q" class="search-field" type="search" placeholder="search..."/>
-        </form>
-        <a href="#/categories" class="button button-mini button-primary">All Categories</a>
-        <a href="#/tags" class="button button-mini button-primary">All Tags</a>
-    </header>
-    <br/>
-    <section id="main">
-        <div>
-            <article class="article panel panel-box">
-                <h3 class="article-title">
-                    <a th:href="@{'/entries/' + ${entry.entryId}}" class="entry-title"
-                       th:text="${entry.frontMatter.title}">Hello</a></h3>
+        <p class="article-meta" th:inline="text">updated at [[${entry.updated.date}]] by
+            <a th:href="@{'/users/' + ${entry.updated.name} + '/entries?updated'}"
+               th:text="${entry.updated.name}"></a>
+            created at [[${entry.created.date}]] by
+            <a th:href="@{'/users/' + ${entry.created.name} + '/entries'}"
+               th:text="${entry.created.name}"></a><br/>
+            category: <span th:utext="${@categoriesRenderer.render(entry.frontMatter.categories)}"></span><br/>
+            tags: <span th:utext="${@tagRenderer.render(entry.frontMatter.tags)}"></span>
+        </p>
 
-                <p class="article-meta" th:inline="text">updated at [[${entry.updated.date}]] by
-                    <a th:href="@{'/users/' + ${entry.updated.name} + '/entries?updated'}"
-                       th:text="${entry.updated.name}"></a>
-                    created at [[${entry.created.date}]] by
-                    <a th:href="@{'/users/' + ${entry.created.name} + '/entries'}"
-                       th:text="${entry.created.name}"></a><br/>
-                    category: <span th:utext="${@categoriesRenderer.render(entry.frontMatter.categories)}"></span><br/>
-                    tags: <span th:utext="${@tagRenderer.render(entry.frontMatter.tags)}"></span>
-                </p>
+        <p>
+            <a th:href="${@gitProperties.uri.replace('.git', '') + '/edit/master/content/' + #numbers.formatInteger(entry.entryId, 5, 'NONE') + '.md'}">Edit</a>
+            <a th:href="${@gitProperties.uri.replace('.git', '') + '/commits/master/content/' + #numbers.formatInteger(entry.entryId, 5, 'NONE') + '.md'}">History</a>
+        </p>
 
-                <p>
-                    <a th:href="${@gitProperties.uri.replace('.git', '') + '/edit/master/content/' + #numbers.formatInteger(entry.entryId, 5, 'NONE') + '.md'}">Edit</a>
-                    <a th:href="${@gitProperties.uri.replace('.git', '') + '/commits/master/content/' + #numbers.formatInteger(entry.entryId, 5, 'NONE') + '.md'}">History</a>
-                </p>
-
-                <p th:utext="${@marked.marked(entry.content)}">Content</p>
-            </article>
-        </div>
-    </section>
+        <p th:utext="${@marked.marked(entry.content)}">Content</p>
+    </article>
+    <script th:src="@{/highlight/highlight.pack.js}"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
 </div>
-<script th:src="@{/highlight/highlight.pack.js}"></script>
-<script>hljs.initHighlightingOnLoad();</script>
 </body>
 </html>

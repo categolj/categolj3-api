@@ -18,8 +18,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @Controller
-public class EntryController {
+public class BlogController {
 
     @Autowired
     RestTemplate restTemplate;
@@ -121,5 +123,27 @@ public class EntryController {
         Page<Entry> entries = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, typeReference).getBody();
         model.addAttribute("page", entries);
         return "index";
+    }
+
+    @RequestMapping(path = "/tags")
+    String tags(Model model, UriComponentsBuilder builder) {
+        UriComponents uri = builder
+                .replacePath("/api/tags")
+                .build();
+        List<String> tags = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<List<String>>() {
+        }).getBody();
+        model.addAttribute("tags", tags);
+        return "tags";
+    }
+
+    @RequestMapping(path = "/categories")
+    String categories(Model model, UriComponentsBuilder builder) {
+        UriComponents uri = builder
+                .replacePath("/api/categories")
+                .build();
+        List<List<String>> categories = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<List<List<String>>>() {
+        }).getBody();
+        model.addAttribute("categories", categories);
+        return "categories";
     }
 }
