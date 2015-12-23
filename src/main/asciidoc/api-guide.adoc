@@ -1,4 +1,4 @@
-= CategoLJ3 API Guide
+= CategoLJ3 REST API Guide
 Toshiaki Maki;
 :doctype: book
 :icons: font
@@ -40,6 +40,18 @@ include::{snippets}/get-entries-page1/http-request.adoc[]
 ===== Example response
 
 include::{snippets}/get-entries-page1/http-response.adoc[]
+
+==== Exclude content
+
+===== Example request
+
+include::{snippets}/get-entries-exclude-content/curl-request.adoc[]
+
+include::{snippets}/get-entries-exclude-content/http-request.adoc[]
+
+===== Example response
+
+include::{snippets}/get-entries-exclude-content/http-response.adoc[]
 
 === Get entries by tag
 

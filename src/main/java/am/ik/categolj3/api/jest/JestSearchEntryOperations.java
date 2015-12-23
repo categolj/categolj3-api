@@ -29,57 +29,69 @@ public class JestSearchEntryOperations implements SearchEntryOperations {
     @Autowired
     JestClient jestClient;
 
+    final String[] fieldsExcludeContent = new String[]{
+            "entryId",
+            "created.name",
+            "created.date",
+            "updated.name",
+            "updated.date",
+            "frontMatter.title",
+            "frontMatter.tags",
+            "frontMatter.categories"};
+
     @Override
-    public Page<Entry> findAll(Pageable pageable) {
+    public Page<Entry> findAll(Pageable pageable, SearchOptions options) {
         QueryBuilder query = QueryBuilders.matchAllQuery();
-        return search(query, pageable);
+        return search(query, pageable, options);
     }
 
     @Override
-    public Page<Entry> findByTag(String tag, Pageable pageable) {
+    public Page<Entry> findByTag(String tag, Pageable pageable, SearchOptions options) {
         QueryBuilder query = QueryBuilders.matchQuery("frontMatter.tags", tag)
                 .operator(MatchQueryBuilder.Operator.AND);
-        return search(query, pageable);
+        return search(query, pageable, options);
     }
 
     @Override
-    public Page<Entry> findByCategories(List<String> categories, Pageable pageable) {
+    public Page<Entry> findByCategories(List<String> categories, Pageable pageable, SearchOptions options) {
         QueryBuilder query = QueryBuilders.matchQuery("frontMatter.categories", categories)
                 .operator(MatchQueryBuilder.Operator.AND);
-        return search(query, pageable);
+        return search(query, pageable, options);
     }
 
     @Override
-    public Page<Entry> findByCreatedBy(String user, Pageable pageable) {
+    public Page<Entry> findByCreatedBy(String user, Pageable pageable, SearchOptions options) {
         QueryBuilder query = QueryBuilders.matchQuery("created.name", user)
                 .operator(MatchQueryBuilder.Operator.AND);
-        return search(query, pageable);
+        return search(query, pageable, options);
     }
 
     @Override
-    public Page<Entry> findByUpdatedBy(String user, Pageable pageable) {
+    public Page<Entry> findByUpdatedBy(String user, Pageable pageable, SearchOptions options) {
         QueryBuilder query = QueryBuilders.matchQuery("updated.name", user)
                 .operator(MatchQueryBuilder.Operator.AND);
-        return search(query, pageable);
+        return search(query, pageable, options);
     }
 
     @Override
-    public Page<Entry> findByQuery(String q, Pageable pageable) {
+    public Page<Entry> findByQuery(String q, Pageable pageable, SearchOptions options) {
         QueryBuilder query = QueryBuilders.simpleQueryStringQuery(q);
-        return search(query, pageable);
+        return search(query, pageable, options);
     }
 
-    Page<Entry> search(QueryBuilder query, Pageable pageable) {
+    Page<Entry> search(QueryBuilder query, Pageable pageable, SearchOptions options) {
         try {
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                    .query(query)
+                    .sort("updated.date", SortOrder.DESC)
+                    .sort("entryId", SortOrder.DESC)
+                    .from(pageable.getOffset())
+                    .size(pageable.getPageSize());
+            if (options.isExcludeContent()) {
+                sourceBuilder = sourceBuilder.fetchSource(fieldsExcludeContent, new String[]{"content"});
+            }
             List<Entry> content = ((JestResult) jestClient.execute(
-                    new Search.Builder(
-                            new SearchSourceBuilder()
-                                    .query(query)
-                                    .sort("updated.date", SortOrder.DESC)
-                                    .sort("entryId", SortOrder.DESC)
-                                    .from(pageable.getOffset())
-                                    .size(pageable.getPageSize())
-                                    .toString())
+                    new Search.Builder(sourceBuilder.toString())
                             .addIndex(Entry.INDEX_NAME)
                             .addType(Entry.DOC_TYPE)
                             .build()))

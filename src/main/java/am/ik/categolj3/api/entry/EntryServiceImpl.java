@@ -16,33 +16,33 @@ public class EntryServiceImpl implements EntryService {
     SearchEntryOperations searchEntryOperations;
 
     @Override
-    public Page<Entry> findAll(Pageable pageable) {
-        return this.searchEntryOperations.findAll(pageable);
+    public Page<Entry> findAll(Pageable pageable, SearchOptions options) {
+        return this.searchEntryOperations.findAll(pageable, options);
     }
 
     @Override
-    public Page<Entry> findByTag(String tag, Pageable pageable) {
-        return this.searchEntryOperations.findByTag(tag, pageable);
+    public Page<Entry> findByTag(String tag, Pageable pageable, SearchOptions options) {
+        return this.searchEntryOperations.findByTag(tag, pageable, options);
     }
 
     @Override
-    public Page<Entry> findByCategories(List<String> categories, Pageable pageable) {
-        return this.searchEntryOperations.findByCategories(categories, pageable);
+    public Page<Entry> findByCategories(List<String> categories, Pageable pageable, SearchOptions options) {
+        return this.searchEntryOperations.findByCategories(categories, pageable, options);
     }
 
     @Override
-    public Page<Entry> findByCreatedBy(String user, Pageable pageable) {
-        return this.searchEntryOperations.findByCreatedBy(user, pageable);
+    public Page<Entry> findByCreatedBy(String user, Pageable pageable, SearchOptions options) {
+        return this.searchEntryOperations.findByCreatedBy(user, pageable, options);
     }
 
     @Override
-    public Page<Entry> findByUpdatedBy(String user, Pageable pageable) {
-        return this.searchEntryOperations.findByUpdatedBy(user, pageable);
+    public Page<Entry> findByUpdatedBy(String user, Pageable pageable, SearchOptions options) {
+        return this.searchEntryOperations.findByUpdatedBy(user, pageable, options);
     }
 
     @Override
-    public Page<Entry> findByQuery(String keyword, Pageable pageable) {
-        return this.searchEntryOperations.findByQuery(keyword, pageable);
+    public Page<Entry> findByQuery(String keyword, Pageable pageable, SearchOptions options) {
+        return this.searchEntryOperations.findByQuery(keyword, pageable, options);
     }
 
     @Override

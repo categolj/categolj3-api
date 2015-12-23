@@ -19,8 +19,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -40,6 +42,30 @@ public class EntryRestControllerDocumentation {
     WebApplicationContext context;
 
     OffsetDateTime now = OffsetDateTime.now();
+
+    List<Entry> mockEntries = Arrays.asList(
+            Entry.builder()
+                    .entryId(2L)
+                    .content("Spring Boot!")
+                    .frontMatter(FrontMatter.builder()
+                            .title("Hello Spring Boot")
+                            .categories(Arrays.asList("Programming", "Java", "Spring", "Boot"))
+                            .tags(Arrays.asList("Java", "Spring", "SpringBoot"))
+                            .build())
+                    .created(Author.builder().name("making").date(now).build())
+                    .updated(Author.builder().name("making").date(now).build())
+                    .build(),
+            Entry.builder()
+                    .entryId(1L)
+                    .content("Java8!")
+                    .frontMatter(FrontMatter.builder()
+                            .title("Hello Java8")
+                            .categories(Arrays.asList("Programming", "Java"))
+                            .tags(Arrays.asList("Java", "Java8", "Stream"))
+                            .build())
+                    .created(Author.builder().name("making").date(now).build())
+                    .updated(Author.builder().name("making").date(now).build())
+                    .build());
 
     @Before
     public void before() throws Exception {
@@ -66,102 +92,70 @@ public class EntryRestControllerDocumentation {
     @Test
     public void getEntries() throws Exception {
         when(this.entryService.findAll(anyObject()))
-                .thenReturn(new PageImpl<>(Arrays.asList(
-                        Entry.builder()
-                                .entryId(2L)
-                                .content("Spring Boot!")
-                                .frontMatter(FrontMatter.builder()
-                                        .title("Hello Spring Boot")
-                                        .categories(Arrays.asList("Programming", "Java", "Spring", "Boot"))
-                                        .tags(Arrays.asList("Java", "Spring", "SpringBoot"))
-                                        .build())
-                                .created(Author.builder().name("making").date(now).build())
-                                .updated(Author.builder().name("making").date(now).build())
-                                .build(),
-                        Entry.builder()
-                                .entryId(1L)
-                                .content("Java8!")
-                                .frontMatter(FrontMatter.builder()
-                                        .title("Hello Java8")
-                                        .categories(Arrays.asList("Programming", "Java"))
-                                        .tags(Arrays.asList("Java", "Java8", "Stream"))
-                                        .build())
-                                .created(Author.builder().name("making").date(now).build())
-                                .updated(Author.builder().name("making").date(now).build())
-                                .build())));
+                .thenReturn(new PageImpl<>(mockEntries));
         this.mockMvc
                 .perform(get("/api/entries"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("numberOfElements", is(2)))
-                .andExpect(jsonPath("number", is(0)))
+                .andExpect(jsonPath("$.numberOfElements", is(2)))
+                .andExpect(jsonPath("$.number", is(0)))
+                .andExpect(jsonPath("$.totalElements", is(2)))
+                .andExpect(jsonPath("$.content[0].content", is(notNullValue())))
+                .andExpect(jsonPath("$.content[0].entryId", is(2)))
+                .andExpect(jsonPath("$.content[1].content", is(notNullValue())))
+                .andExpect(jsonPath("$.content[1].entryId", is(1)))
                 .andDo(document("get-entries"));
+    }
+
+    @Test
+    public void getEntriesExcludeContent() throws Exception {
+        when(this.entryService.findAll(anyObject(), eq(SearchEntryOperations.SearchOptions.builder().excludeContent(true).build())))
+                .thenReturn(new PageImpl<>(mockEntries.stream().peek(e -> e.setContent(null)).collect(Collectors.toList())));
+        this.mockMvc
+                .perform(get("/api/entries").param("excludeContent", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.numberOfElements", is(2)))
+                .andExpect(jsonPath("$.number", is(0)))
+                .andExpect(jsonPath("$.totalElements", is(2)))
+                .andExpect(jsonPath("$.content[0].content").doesNotExist())
+                .andExpect(jsonPath("$.content[0].entryId", is(2)))
+                .andExpect(jsonPath("$.content[1].content").doesNotExist())
+                .andExpect(jsonPath("$.content[1].entryId", is(1)))
+                .andDo(document("get-entries-exclude-content"));
     }
 
     @Test
     public void getEntriesPage1() throws Exception {
         when(this.entryService.findAll(anyObject()))
-                .thenReturn(new PageImpl<>(Arrays.asList(
-                        Entry.builder()
-                                .entryId(2L)
-                                .content("Spring Boot!")
-                                .frontMatter(FrontMatter.builder()
-                                        .title("Hello Spring Boot")
-                                        .categories(Arrays.asList("Programming", "Java", "Spring", "Boot"))
-                                        .tags(Arrays.asList("Java", "Spring", "SpringBoot"))
-                                        .build())
-                                .created(Author.builder().name("making").date(now).build())
-                                .updated(Author.builder().name("making").date(now).build())
-                                .build(),
-                        Entry.builder()
-                                .entryId(1L)
-                                .content("Java8!")
-                                .frontMatter(FrontMatter.builder()
-                                        .title("Hello Java8")
-                                        .categories(Arrays.asList("Programming", "Java"))
-                                        .tags(Arrays.asList("Java", "Java8", "Stream"))
-                                        .build())
-                                .created(Author.builder().name("making").date(now).build())
-                                .updated(Author.builder().name("making").date(now).build())
-                                .build()), new PageRequest(1, 2), 10L));
+                .thenReturn(new PageImpl<>(mockEntries, new PageRequest(1, 2), 10L));
         this.mockMvc
-                .perform(get("/api/entries?page=1&size=2"))
+                .perform(get("/api/entries")
+                        .param("page", "1")
+                        .param("size", "2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("numberOfElements", is(2)))
-                .andExpect(jsonPath("number", is(1)))
+                .andExpect(jsonPath("$.numberOfElements", is(2)))
+                .andExpect(jsonPath("$.number", is(1)))
+                .andExpect(jsonPath("$.totalElements", is(10)))
+                .andExpect(jsonPath("$.content[0].content", is(notNullValue())))
+                .andExpect(jsonPath("$.content[0].entryId", is(2)))
+                .andExpect(jsonPath("$.content[1].content", is(notNullValue())))
+                .andExpect(jsonPath("$.content[1].entryId", is(1)))
                 .andDo(document("get-entries-page1"));
     }
 
     @Test
     public void getEntriesByTag() throws Exception {
         when(this.entryService.findByTag(eq("Java"), anyObject()))
-                .thenReturn(new PageImpl<>(Arrays.asList(
-                        Entry.builder()
-                                .entryId(2L)
-                                .content("Spring Boot!")
-                                .frontMatter(FrontMatter.builder()
-                                        .title("Hello Spring Boot")
-                                        .categories(Arrays.asList("Programming", "Java", "Spring", "Boot"))
-                                        .tags(Arrays.asList("Java", "Spring", "SpringBoot"))
-                                        .build())
-                                .created(Author.builder().name("making").date(now).build())
-                                .updated(Author.builder().name("making").date(now).build())
-                                .build(),
-                        Entry.builder()
-                                .entryId(1L)
-                                .content("Java8!")
-                                .frontMatter(FrontMatter.builder()
-                                        .title("Hello Java8")
-                                        .categories(Arrays.asList("Programming", "Java"))
-                                        .tags(Arrays.asList("Java", "Java8", "Stream"))
-                                        .build())
-                                .created(Author.builder().name("making").date(now).build())
-                                .updated(Author.builder().name("making").date(now).build())
-                                .build())));
+                .thenReturn(new PageImpl<>(mockEntries));
         this.mockMvc
                 .perform(get("/api/tags/Java/entries"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("numberOfElements", is(2)))
-                .andExpect(jsonPath("number", is(0)))
+                .andExpect(jsonPath("$.numberOfElements", is(2)))
+                .andExpect(jsonPath("$.number", is(0)))
+                .andExpect(jsonPath("$.totalElements", is(2)))
+                .andExpect(jsonPath("$.content[0].content", is(notNullValue())))
+                .andExpect(jsonPath("$.content[0].entryId", is(2)))
+                .andExpect(jsonPath("$.content[1].content", is(notNullValue())))
+                .andExpect(jsonPath("$.content[1].entryId", is(1)))
                 .andDo(document("get-entries-by-tag"));
     }
 }

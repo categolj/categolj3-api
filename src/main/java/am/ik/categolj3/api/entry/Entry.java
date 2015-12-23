@@ -1,5 +1,6 @@
 package am.ik.categolj3.api.entry;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.searchbox.annotations.JestId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,7 @@ public class Entry implements Serializable {
     @JestId
     private Long entryId;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String content;
 
     private Author created;
