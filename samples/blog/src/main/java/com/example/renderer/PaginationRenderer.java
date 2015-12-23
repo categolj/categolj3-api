@@ -1,6 +1,6 @@
 package com.example.renderer;
 
-import com.example.Page;
+import com.example.BlogUiController;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -12,13 +12,13 @@ import java.io.UnsupportedEncodingException;
 @Component
 public class PaginationRenderer<T> {
 
-    public String render(Page<T> page) throws UnsupportedEncodingException {
+    public String render(BlogUiController.Page<T> page) throws UnsupportedEncodingException {
         return new Pager<>(page).render();
     }
 
     @Data
     static class Pager<T> {
-        private final Page<T> page;
+        private final BlogUiController.Page<T> page;
         private final int maxDisplayCount = 5;
 
         String render() throws UnsupportedEncodingException {

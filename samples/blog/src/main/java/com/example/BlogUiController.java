@@ -21,7 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @Controller
-public class BlogController {
+public class BlogUiController {
 
     @Autowired
     RestTemplate restTemplate;
@@ -37,6 +37,7 @@ public class BlogController {
                 .replacePath("/api/entries")
                 .queryParam("page", pageable.getPageNumber())
                 .queryParam("size", pageable.getPageSize())
+                .queryParam("excludeContent", true)
                 .build();
         Page<Entry> entries = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, typeReference).getBody();
         model.addAttribute("page", entries);
@@ -50,6 +51,7 @@ public class BlogController {
                 .queryParam("q", query)
                 .queryParam("page", pageable.getPageNumber())
                 .queryParam("size", pageable.getPageSize())
+                .queryParam("excludeContent", true)
                 .build();
         Page<Entry> entries = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, typeReference).getBody();
         model.addAttribute("page", entries);
@@ -82,6 +84,7 @@ public class BlogController {
                 .replacePath("/api/tags/{tag}/entries")
                 .queryParam("page", pageable.getPageNumber())
                 .queryParam("size", pageable.getPageSize())
+                .queryParam("excludeContent", true)
                 .buildAndExpand(tag);
         Page<Entry> entries = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, typeReference).getBody();
         model.addAttribute("page", entries);
@@ -94,6 +97,7 @@ public class BlogController {
                 .replacePath("/api/categories/{categories}/entries")
                 .queryParam("page", pageable.getPageNumber())
                 .queryParam("size", pageable.getPageSize())
+                .queryParam("excludeContent", true)
                 .buildAndExpand(categories);
         Page<Entry> entries = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, typeReference).getBody();
         model.addAttribute("page", entries);
@@ -106,6 +110,7 @@ public class BlogController {
                 .replacePath("/api/users/{name}/entries")
                 .queryParam("page", pageable.getPageNumber())
                 .queryParam("size", pageable.getPageSize())
+                .queryParam("excludeContent", true)
                 .buildAndExpand(name);
         Page<Entry> entries = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, typeReference).getBody();
         model.addAttribute("page", entries);
@@ -119,6 +124,7 @@ public class BlogController {
                 .queryParam("updated")
                 .queryParam("page", pageable.getPageNumber())
                 .queryParam("size", pageable.getPageSize())
+                .queryParam("excludeContent", true)
                 .buildAndExpand(name);
         Page<Entry> entries = restTemplate.exchange(uri.toUri(), HttpMethod.GET, HttpEntity.EMPTY, typeReference).getBody();
         model.addAttribute("page", entries);
@@ -145,5 +151,18 @@ public class BlogController {
         }).getBody();
         model.addAttribute("categories", categories);
         return "categories";
+    }
+
+    @lombok.Data
+    public static class Page<T> {
+        private List<T> content;
+        private String sort;
+        private long totalPages;
+        private long totalElements;
+        private boolean first;
+        private boolean last;
+        private long numberOfElements;
+        private int size;
+        private int number;
     }
 }
