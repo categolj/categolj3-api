@@ -18,10 +18,10 @@ import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 @EnableCategoLJ3ApiServer
-public class BlogApplication {
+public class BlogUiApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(BlogApplication.class, args);
+        SpringApplication.run(BlogUiApplication.class, args);
     }
 
     @Bean
@@ -31,9 +31,9 @@ public class BlogApplication {
 
     @Profile("cloud")
     @Bean
-    JestClient jestClient(JestProperties jestProperties, Gson gson) throws Exception {
+    JestClient jestClient(JestProperties jestProperties, Gson gson, ObjectMapper objectMapper) throws Exception {
         // Using jackson to parse VCAP_SERVICES
-        JsonNode result = new ObjectMapper().readValue(System.getenv("VCAP_SERVICES"), JsonNode.class);
+        JsonNode result = objectMapper.readValue(System.getenv("VCAP_SERVICES"), JsonNode.class);
 
         String connectionUrl = result.get("searchly").get(0).get("credentials").get("uri").asText();
         // Configuration
