@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -90,12 +91,6 @@ public class JestSearchEntryOperations implements SearchEntryOperations {
             if (options.isExcludeContent()) {
                 sourceBuilder = sourceBuilder.fetchSource(fieldsExcludeContent, new String[]{"content"});
             }
-            List<Entry> content = ((JestResult) jestClient.execute(
-                    new Search.Builder(sourceBuilder.toString())
-                            .addIndex(Entry.INDEX_NAME)
-                            .addType(Entry.DOC_TYPE)
-                            .build()))
-                    .getSourceAsObjectList(Entry.class);
             long count = jestClient.execute(
                     new Count.Builder()
                             .query(new SearchSourceBuilder()
@@ -104,6 +99,17 @@ public class JestSearchEntryOperations implements SearchEntryOperations {
                             .addType(Entry.DOC_TYPE)
                             .build())
                     .getCount().longValue();
+            List<Entry> content = null;
+            if (count > 0) {
+                content = ((JestResult) jestClient.execute(
+                        new Search.Builder(sourceBuilder.toString())
+                                .addIndex(Entry.INDEX_NAME)
+                                .addType(Entry.DOC_TYPE)
+                                .build()))
+                        .getSourceAsObjectList(Entry.class);
+            } else {
+                content = Collections.emptyList();
+            }
             return new PageImpl<>(content, pageable, count);
         } catch (Exception e) {
             throw new IllegalStateException(e);
