@@ -2,6 +2,8 @@ var request = window.superagent;
 var hljs = window.hljs;
 
 function loadContent(doc, entryId) {
+    doc.innerText = 'Loading...';
+    doc.disabled = true;
     request
         .get('/entries/' + entryId + '?partial')
         .end(function (err, res) {
