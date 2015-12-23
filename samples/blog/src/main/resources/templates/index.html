@@ -7,6 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content">
+    <h2 th:if="${param.q != null}" th:inline="text">Search for [[${param.q[0]}]]...</h2>
     <div>
         <article class="article panel panel-box" th:each="entry : ${page.content}">
             <h3 class="article-title">
