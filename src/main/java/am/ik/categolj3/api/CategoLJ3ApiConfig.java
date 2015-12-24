@@ -5,6 +5,8 @@ import am.ik.categolj3.api.category.InMemoryCategoryService;
 import am.ik.categolj3.api.jest.JestProperties;
 import am.ik.categolj3.api.tag.InMemoryTagService;
 import am.ik.categolj3.api.tag.TagService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.gson.*;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
@@ -15,6 +17,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -43,15 +46,22 @@ public class CategoLJ3ApiConfig {
 
     @Bean
     Gson gson() {
-        GsonBuilder builder = new GsonBuilder()
+        return new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ssX")
                 .registerTypeAdapter(OffsetDateTime.class,
                         (JsonDeserializer<OffsetDateTime>) (json, type, context)
                                 -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(json.getAsString(), OffsetDateTime::from))
                 .registerTypeAdapter(OffsetDateTime.class,
                         (JsonSerializer<OffsetDateTime>) (json, type, context)
-                                -> new JsonPrimitive(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(json)));
-        return builder.create();
+                                -> new JsonPrimitive(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(json))).create();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    ObjectMapper objectMapper() {
+        return new Jackson2ObjectMapperBuilder()
+                .dateFormat(new StdDateFormat())
+                .build();
     }
 
     @Bean
