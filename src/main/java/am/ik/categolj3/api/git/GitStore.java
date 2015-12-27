@@ -69,6 +69,9 @@ public class GitStore {
     EventManager eventManager;
 
     @Autowired
+    ForceRefreshTask forceRefreshTask;
+
+    @Autowired
     GitPullTask gitPullTask;
 
     @Autowired
@@ -253,15 +256,19 @@ public class GitStore {
         this.currentHead.set(this.head());
         if (this.gitProperties.isInit()) {
             this.pull().thenAccept(r -> {
-                this.forceRefreshAll();
-                this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
+                this.forceRefreshTask.forceRefresh(this)
+                        .thenAcceptAsync(v -> {
+                            this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
+                        });
             }).exceptionally(e -> {
                 log.error("error!", e);
                 return null;
             });
         } else {
-            this.forceRefreshAll();
-            this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
+            this.forceRefreshTask.forceRefresh(this)
+                    .thenAcceptAsync(v -> {
+                        this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
+                    });
         }
     }
 
@@ -269,6 +276,23 @@ public class GitStore {
     void destroy() {
         this.git.close();
     }
+
+    @Component
+    @Slf4j
+    public static class ForceRefreshTask {
+        @Async
+        public CompletableFuture<Void> forceRefresh(GitStore gitStore) {
+            try {
+                gitStore.forceRefreshAll();
+                return CompletableFuture.completedFuture(null);
+            } catch (Exception e) {
+                CompletableFuture<Void> f = new CompletableFuture<>();
+                f.completeExceptionally(e);
+                return f;
+            }
+        }
+    }
+
 
     @Component
     @Slf4j
