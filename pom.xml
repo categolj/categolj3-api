@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>am.ik.categolj3</groupId>
-    <artifactId>categolj3</artifactId>
+    <artifactId>categolj3-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>categolj3</name>
-    <description>CategoLJ3</description>
+    <name>categolj3-api</name>
+    <description>CategoLJ3 API Server</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -62,8 +62,8 @@
             <version>1.7.2</version>
             <exclusions>
                 <!--<exclusion>-->
-                    <!--<groupId>org.apache.lucene</groupId>-->
-                    <!--<artifactId>lucene-analyzers-common</artifactId>-->
+                <!--<groupId>org.apache.lucene</groupId>-->
+                <!--<artifactId>lucene-analyzers-common</artifactId>-->
                 <!--</exclusion>-->
                 <exclusion>
                     <groupId>org.apache.lucene</groupId>
