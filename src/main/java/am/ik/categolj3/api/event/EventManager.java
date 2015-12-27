@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @Slf4j
@@ -32,6 +33,9 @@ public class EventManager {
     final ApplicationEventPublisher publisher;
     final Queue<EntryEvictEvent> entryEvictEventQueue = new ConcurrentLinkedDeque<>();
     final Queue<EntryPutEvent> entryPutEventQueue = new ConcurrentLinkedDeque<>();
+    final Queue<AppState> appStateQueue = new ConcurrentLinkedDeque<>();
+
+    private final AtomicReference<AppState> state = new AtomicReference<>(AppState.INITIALIZING);
 
     @Autowired
     public EventManager(ApplicationEventPublisher publisher) {
@@ -55,6 +59,13 @@ public class EventManager {
         if (!entryPutEvents.isEmpty()) {
             publisher.publishEvent(new EntryPutEvent.Bulk(entryPutEvents));
         }
+        while (!appStateQueue.isEmpty()) {
+            AppState state = appStateQueue.poll();
+            if (state == AppState.INITIALIZED) {
+                log.info("Initialized");
+            }
+            this.state.set(state);
+        }
     }
 
     public void registerEntryEvictEvent(EntryEvictEvent event) {
@@ -67,5 +78,13 @@ public class EventManager {
 
     public void registerEntryReindexEvent(EntryReIndexEvent event) {
         publisher.publishEvent(event);
+    }
+
+    public void setState(AppState state) {
+        appStateQueue.add(state);
+    }
+
+    public AppState getState() {
+        return this.state.get();
     }
 }

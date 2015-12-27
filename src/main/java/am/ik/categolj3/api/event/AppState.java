@@ -15,10 +15,7 @@
  */
 package am.ik.categolj3.api.event;
 
-import lombok.Data;
-
-import java.io.Serializable;
-
-@Data
-public class EntryReIndexEvent implements Serializable {
+public enum AppState {
+    INITIALIZING,
+    INITIALIZED
 }

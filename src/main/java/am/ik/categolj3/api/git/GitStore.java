@@ -18,7 +18,7 @@ package am.ik.categolj3.api.git;
 import am.ik.categolj3.api.entry.Author;
 import am.ik.categolj3.api.entry.Entry;
 import am.ik.categolj3.api.entry.EntryEventFiringCache;
-import am.ik.categolj3.api.event.EntryReIndexEvent;
+import am.ik.categolj3.api.event.AppState;
 import am.ik.categolj3.api.event.EventManager;
 import com.google.common.collect.Iterables;
 import lombok.Data;
@@ -256,7 +256,7 @@ public class GitStore {
         this.currentHead.set(this.head());
         this.pull()
                 .thenCompose(r -> this.forceRefreshTask.forceRefresh(this))
-                .thenAccept(v -> this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true)))
+                .thenAccept(v -> this.eventManager.setState(AppState.INITIALIZED))
                 .exceptionally(e -> {
                     log.error("error!", e);
                     return null;

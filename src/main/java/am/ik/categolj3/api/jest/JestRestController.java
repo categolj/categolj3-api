@@ -29,6 +29,6 @@ public class JestRestController {
 
     @RequestMapping(path = "reindex")
     void reindex() {
-        eventManager.registerEntryReindexEvent(new EntryReIndexEvent(false));
+        eventManager.registerEntryReindexEvent(new EntryReIndexEvent());
     }
 }

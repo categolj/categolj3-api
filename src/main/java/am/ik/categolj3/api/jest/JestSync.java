@@ -15,10 +15,7 @@
  */
 package am.ik.categolj3.api.jest;
 
-import am.ik.categolj3.api.event.EntryEvictEvent;
-import am.ik.categolj3.api.event.EntryPutEvent;
-import am.ik.categolj3.api.event.EntryReIndexEvent;
-import am.ik.categolj3.api.event.EventManager;
+import am.ik.categolj3.api.event.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -38,38 +35,36 @@ public class JestSync {
 
     @EventListener
     public void handleBulkDelete(EntryEvictEvent.Bulk e) {
-        if (log.isInfoEnabled()) {
-            log.info("Bulk delete ({})", e.getEvents().size());
-        }
-        try {
-            indexer.bulkDelete(e.getEvents().stream().map(EntryEvictEvent::getEntryId).collect(Collectors.toList()));
-        } catch (Exception ex) {
-            log.warn("Failed to bulk delete", ex);
-            e.getEvents().forEach(eventManager::registerEntryEvictEvent);
+        if (eventManager.getState() == AppState.INITIALIZED || jestProperties.isInit()) {
+            if (log.isInfoEnabled()) {
+                log.info("Bulk delete ({})", e.getEvents().size());
+            }
+            try {
+                indexer.bulkDelete(e.getEvents().stream().map(EntryEvictEvent::getEntryId).collect(Collectors.toList()));
+            } catch (Exception ex) {
+                log.warn("Failed to bulk delete", ex);
+                e.getEvents().forEach(eventManager::registerEntryEvictEvent);
+            }
         }
     }
 
     @EventListener
     public void handleBulkUpdate(EntryPutEvent.Bulk e) {
-        if (log.isInfoEnabled()) {
-            log.info("Bulk update ({})", e.getEvents().size());
-        }
-        try {
-            indexer.bulkUpdate(e.getEvents().stream().map(EntryPutEvent::getEntry).collect(Collectors.toList()));
-        } catch (Exception ex) {
-            log.warn("Failed to bulk update", ex);
-            e.getEvents().forEach(eventManager::registerEntryPutEvent);
+        if (eventManager.getState() == AppState.INITIALIZED || jestProperties.isInit()) {
+            if (log.isInfoEnabled()) {
+                log.info("Bulk update ({})", e.getEvents().size());
+            }
+            try {
+                indexer.bulkUpdate(e.getEvents().stream().map(EntryPutEvent::getEntry).collect(Collectors.toList()));
+            } catch (Exception ex) {
+                log.warn("Failed to bulk update", ex);
+                e.getEvents().forEach(eventManager::registerEntryPutEvent);
+            }
         }
     }
 
     @EventListener
     public void handleReindex(EntryReIndexEvent e) {
-        if (e.isInit()) {
-            if (jestProperties.isInit()) {
-                indexer.reindex();
-            }
-        } else {
-            indexer.reindex();
-        }
+        indexer.reindex();
     }
 }
