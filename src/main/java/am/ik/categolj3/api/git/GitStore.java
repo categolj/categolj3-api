@@ -103,6 +103,21 @@ public class GitStore {
         });
     }
 
+    public List<Entry> loadEntries() {
+        return getContentFiles().stream()
+                .map(File::toPath)
+                .map(this::loadEntry)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    public void forceRefreshAll() {
+        loadEntries().forEach(entry -> {
+            entryCache.put(entry.getEntryId(), entry);
+        });
+    }
+
     void syncHead() {
         log.info("Syncing HEAD...");
 
@@ -152,7 +167,7 @@ public class GitStore {
         this.currentHead.set(newHead);
     }
 
-    public ObjectId head() {
+    ObjectId head() {
         try (Repository repository = this.git.getRepository()) {
             return repository.resolve("HEAD");
         } catch (IOException e) {
@@ -160,16 +175,8 @@ public class GitStore {
         }
     }
 
-    public List<Entry> loadEntries() {
-        return getContentFiles().stream()
-                .map(File::toPath)
-                .map(this::loadEntry)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-    }
 
-    public Optional<Entry> loadEntry(Path path) {
+    Optional<Entry> loadEntry(Path path) {
         return Entry.loadFromFile(path)
                 .map(e -> {
                     Pair<Author, Author> author = getAuthor(path);
@@ -189,57 +196,6 @@ public class GitStore {
                 });
     }
 
-    public void forceRefreshAll() {
-        loadEntries().forEach(entry -> {
-            entryCache.put(entry.getEntryId(), entry);
-        });
-    }
-
-    @PostConstruct
-    void load() {
-        this.entryCache = new EntryEventFiringCache(this.cacheManager.getCache("entry"), this.eventManager);
-        this.git = this.getGitDirectory();
-        this.currentHead.set(this.head());
-        if (this.gitProperties.isInit()) {
-            this.pull().thenAccept(r -> {
-                this.forceRefreshAll();
-                this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
-            }).exceptionally(e -> {
-                log.error("error!", e);
-                return null;
-            });
-        } else {
-            this.forceRefreshAll();
-            this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
-        }
-    }
-
-    @PreDestroy
-    void destroy() {
-        this.git.close();
-    }
-
-    @Component
-    @Slf4j
-    public static class GitPullTask {
-        @Autowired
-        GitProperties gitProperties;
-
-        @Async
-        public CompletableFuture<PullResult> pull(Git git) {
-            log.info("git pull {}", gitProperties.getUri());
-            try {
-                PullCommand pull = git.pull();
-                gitProperties.credentialsProvider().ifPresent(
-                        pull::setCredentialsProvider);
-                return CompletableFuture.completedFuture(pull.call());
-            } catch (GitAPIException e) {
-                CompletableFuture<PullResult> f = new CompletableFuture<>();
-                f.completeExceptionally(e);
-                return f;
-            }
-        }
-    }
 
     List<File> getContentFiles() {
         String contentsDir = gitProperties.getBaseDir().getAbsolutePath() + "/"
@@ -287,6 +243,52 @@ public class GitStore {
             throw new UncheckedIOException(e);
         } catch (GitAPIException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    @PostConstruct
+    void load() {
+        this.entryCache = new EntryEventFiringCache(this.cacheManager.getCache("entry"), this.eventManager);
+        this.git = this.getGitDirectory();
+        this.currentHead.set(this.head());
+        if (this.gitProperties.isInit()) {
+            this.pull().thenAccept(r -> {
+                this.forceRefreshAll();
+                this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
+            }).exceptionally(e -> {
+                log.error("error!", e);
+                return null;
+            });
+        } else {
+            this.forceRefreshAll();
+            this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
+        }
+    }
+
+    @PreDestroy
+    void destroy() {
+        this.git.close();
+    }
+
+    @Component
+    @Slf4j
+    public static class GitPullTask {
+        @Autowired
+        GitProperties gitProperties;
+
+        @Async
+        public CompletableFuture<PullResult> pull(Git git) {
+            log.info("git pull {}", gitProperties.getUri());
+            try {
+                PullCommand pull = git.pull();
+                gitProperties.credentialsProvider().ifPresent(
+                        pull::setCredentialsProvider);
+                return CompletableFuture.completedFuture(pull.call());
+            } catch (GitAPIException e) {
+                CompletableFuture<PullResult> f = new CompletableFuture<>();
+                f.completeExceptionally(e);
+                return f;
+            }
         }
     }
 
