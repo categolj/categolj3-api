@@ -254,22 +254,13 @@ public class GitStore {
         this.entryCache = new EntryEventFiringCache(this.cacheManager.getCache("entry"), this.eventManager);
         this.git = this.getGitDirectory();
         this.currentHead.set(this.head());
-        if (this.gitProperties.isInit()) {
-            this.pull().thenAccept(r -> {
-                this.forceRefreshTask.forceRefresh(this)
-                        .thenAcceptAsync(v -> {
-                            this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
-                        });
-            }).exceptionally(e -> {
-                log.error("error!", e);
-                return null;
-            });
-        } else {
-            this.forceRefreshTask.forceRefresh(this)
-                    .thenAcceptAsync(v -> {
-                        this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
-                    });
-        }
+        this.pull()
+                .thenCompose(r -> this.forceRefreshTask.forceRefresh(this))
+                .thenAccept(v -> this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true)))
+                .exceptionally(e -> {
+                    log.error("error!", e);
+                    return null;
+                });
     }
 
     @PreDestroy
