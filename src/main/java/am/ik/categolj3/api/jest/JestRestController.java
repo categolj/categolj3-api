@@ -15,8 +15,8 @@
  */
 package am.ik.categolj3.api.jest;
 
-import java.util.concurrent.CompletableFuture;
-
+import am.ik.categolj3.api.event.EntryReIndexEvent;
+import am.ik.categolj3.api.event.EventManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/jest")
 public class JestRestController {
     @Autowired
-    JestIndexer indexer;
+    EventManager eventManager;
 
     @RequestMapping(path = "reindex")
-    CompletableFuture<Void> reindex() {
-        return indexer.reindex();
+    void reindex() {
+        eventManager.registerEntryReindexEvent(new EntryReIndexEvent(false));
     }
 }

@@ -27,7 +27,6 @@ import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.config.HttpClientConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -81,13 +80,13 @@ public class CategoLJ3ApiConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    TagService tagService(CacheManager cacheManager) {
-        return new InMemoryTagService(cacheManager);
+    TagService tagService() {
+        return new InMemoryTagService();
     }
 
     @Bean
     @ConditionalOnMissingBean
-    CategoryService categoryService(CacheManager cacheManager) {
-        return new InMemoryCategoryService(cacheManager);
+    CategoryService categoryService() {
+        return new InMemoryCategoryService();
     }
 }

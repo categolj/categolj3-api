@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -63,11 +62,7 @@ public class JestIndexer {
         }
     }
 
-    public void bulkUpdate(List<Long> deleteIds, List<Entry> updateEntries) {
-        bulkUpdateRecursively(deleteIds, updateEntries, 0);
-    }
-
-    private void bulkUpdateRecursively(List<Long> deleteIds, List<Entry> updateEntries, int count) {
+    public void bulkDelete(List<Long> deleteIds) throws Exception {
         Bulk.Builder bulkBuilder = new Bulk.Builder();
         for (Long id : deleteIds) {
             Delete delete = new Delete.Builder(id.toString())
@@ -77,6 +72,11 @@ public class JestIndexer {
                     .build();
             bulkBuilder.addAction(delete);
         }
+        jestClient.execute(bulkBuilder.build());
+    }
+
+    public void bulkUpdate(List<Entry> updateEntries) throws Exception {
+        Bulk.Builder bulkBuilder = new Bulk.Builder();
         for (Entry entry : updateEntries) {
             Index index = new Index.Builder(entry)
                     .refresh(true)
@@ -85,20 +85,7 @@ public class JestIndexer {
                     .build();
             bulkBuilder.addAction(index);
         }
-        try {
-            jestClient.execute(bulkBuilder.build());
-        } catch (Exception e) {
-            log.warn("[" + count + "] bulkUpdate failure delete=" + deleteIds + ", update=" + updateEntries, e);
-            if (++count < 5) {
-                try {
-                    TimeUnit.SECONDS.sleep(count);
-                } catch (InterruptedException e1) {
-                    Thread.currentThread().interrupt();
-                }
-                bulkUpdateRecursively(deleteIds, updateEntries, count);
-            } else {
-                throw new IllegalStateException("failed delete=" + deleteIds + ", update=" + updateEntries, e);
-            }
-        }
+        jestClient.execute(bulkBuilder.build());
     }
+
 }

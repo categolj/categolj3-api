@@ -17,8 +17,9 @@ package am.ik.categolj3.api.git;
 
 import am.ik.categolj3.api.entry.Author;
 import am.ik.categolj3.api.entry.Entry;
-import am.ik.categolj3.api.jest.JestIndexer;
-import am.ik.categolj3.api.jest.JestProperties;
+import am.ik.categolj3.api.entry.EntryEventFiringCache;
+import am.ik.categolj3.api.event.EntryReIndexEvent;
+import am.ik.categolj3.api.event.EventManager;
 import com.google.common.collect.Iterables;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -65,16 +66,13 @@ public class GitStore {
     CacheManager cacheManager;
 
     @Autowired
+    EventManager eventManager;
+
+    @Autowired
     GitPullTask gitPullTask;
 
     @Autowired
     ApplicationContext applicationContext;
-
-    @Autowired
-    JestProperties jestProperties;
-
-    @Autowired
-    JestIndexer indexer;
 
     Cache entryCache;
 
@@ -83,7 +81,19 @@ public class GitStore {
     AtomicReference<ObjectId> currentHead = new AtomicReference<>();
 
     public Entry get(Long entryId) {
-        return this.entryCache.get(entryId, Entry.class);
+        Entry entry = this.entryCache.get(entryId, Entry.class);
+        if (entry == null) {
+            entry = getContentFiles().stream()
+                    .filter(f -> String.format("%05d.md", entryId).equals(f.getName()))
+                    .map(File::toPath)
+                    .map(Entry::loadFromFile)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findAny()
+                    .orElseThrow(() -> new IllegalArgumentException("The requested entry is not found [" + entryId + "]"));
+            this.entryCache.put(entryId, entry);
+        }
+        return entry;
     }
 
     public CompletableFuture<PullResult> pull() {
@@ -109,8 +119,6 @@ public class GitStore {
                 List<DiffEntry> list = diffFormatter.scan(fromCommit.getTree(),
                         toCommit.getTree());
 
-                List<Long> deleted = new ArrayList<>();
-                List<Entry> updated = new ArrayList<>();
                 list.forEach(diff -> {
                     log.info("[{}]\tnew={}\told={}", diff.getChangeType(), diff
                             .getNewPath(), diff.getOldPath());
@@ -121,7 +129,6 @@ public class GitStore {
                             Long entryId = Entry.parseEntryId(path);
                             log.info("evict Entry({})", entryId);
                             this.entryCache.evict(entryId);
-                            deleted.add(entryId);
                         }
                     }
                     if (diff.getNewPath() != null) {
@@ -130,15 +137,9 @@ public class GitStore {
                         this.loadEntry(path).ifPresent(entry -> {
                             log.info("put Entry({})", entry.getEntryId());
                             this.entryCache.put(entry.getEntryId(), entry);
-                            updated.add(entry);
                         });
                     }
                 });
-                if (deleted.isEmpty() && updated.isEmpty()) {
-                    log.info("No change");
-                } else {
-                    this.applicationContext.publishEvent(new GitEntryEvents.BulkUpdateEvent(deleted, updated, OffsetDateTime.now()));
-                }
             } finally {
                 walk.dispose();
             }
@@ -196,24 +197,20 @@ public class GitStore {
 
     @PostConstruct
     void load() {
-        this.entryCache = this.cacheManager.getCache("entry");
+        this.entryCache = new EntryEventFiringCache(this.cacheManager.getCache("entry"), this.eventManager);
         this.git = this.getGitDirectory();
         this.currentHead.set(this.head());
         if (this.gitProperties.isInit()) {
             this.pull().thenAccept(r -> {
                 this.forceRefreshAll();
-                if (this.jestProperties.isInit()) {
-                    this.indexer.reindex();
-                }
+                this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
             }).exceptionally(e -> {
                 log.error("error!", e);
                 return null;
             });
         } else {
             this.forceRefreshAll();
-            if (this.jestProperties.isInit()) {
-                this.indexer.reindex();
-            }
+            this.eventManager.registerEntryReindexEvent(new EntryReIndexEvent(true));
         }
     }
 
@@ -244,7 +241,7 @@ public class GitStore {
         }
     }
 
-    public List<File> getContentFiles() {
+    List<File> getContentFiles() {
         String contentsDir = gitProperties.getBaseDir().getAbsolutePath() + "/"
                 + gitProperties.getContentDir();
         File[] files = new File(contentsDir).listFiles(f -> Entry.isPublic(f
@@ -252,7 +249,7 @@ public class GitStore {
         return files == null ? Collections.emptyList() : Arrays.asList(files);
     }
 
-    public Pair<Author, Author> getAuthor(Path path) {
+    Pair<Author, Author> getAuthor(Path path) {
         Path p = gitProperties.getBaseDir().toPath().relativize(path);
         try {
             Iterable<RevCommit> commits = git.log().addPath(p.toString().replace("\\", "/")).call();
