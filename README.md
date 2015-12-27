@@ -2,6 +2,7 @@
 
 CategoLJ3 API Server is REST API Server for Blog Application
 
+[![Build Status](https://travis-ci.org/categolj/categolj3-api.svg?branch=master)](https://travis-ci.org/categolj/categolj3-api)
 
 ``` xml
 <dependency>
