@@ -30,3 +30,5 @@ public class BlogApiServer {
 ```
 
 Check API [http://localhost:8080/docs/api-guide.html](http://localhost:8080/docs/api-guide.html)
+
+See [samples](samples)
