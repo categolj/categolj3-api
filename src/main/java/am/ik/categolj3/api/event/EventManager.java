@@ -46,9 +46,10 @@ public class EventManager {
     public void fireEvents() {
         List<EntryEvictEvent> entryEvictEvents = new ArrayList<>();
         while (!entryEvictEventQueue.isEmpty()) {
-            entryEvictEventQueue.add(entryEvictEventQueue.poll());
+            entryEvictEvents.add(entryEvictEventQueue.poll());
         }
         if (!entryEvictEvents.isEmpty()) {
+            log.info("publish bulk evict event");
             publisher.publishEvent(new EntryEvictEvent.Bulk(entryEvictEvents));
         }
 
@@ -57,6 +58,7 @@ public class EventManager {
             entryPutEvents.add(entryPutEventQueue.poll());
         }
         if (!entryPutEvents.isEmpty()) {
+            log.info("publish bulk put event");
             publisher.publishEvent(new EntryPutEvent.Bulk(entryPutEvents));
         }
         while (!appStateQueue.isEmpty()) {
