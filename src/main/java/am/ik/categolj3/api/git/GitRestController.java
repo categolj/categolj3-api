@@ -15,6 +15,8 @@
  */
 package am.ik.categolj3.api.git;
 
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.PullResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,14 +25,18 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("api/git")
+@Slf4j
 public class GitRestController {
     @Autowired
     GitStore gitStore;
 
     @RequestMapping(path = "pull")
     CompletableFuture<String> pull() {
-        return gitStore.pull().thenApply(r -> {
-            return r.toString();
-        }).exceptionally(Throwable::toString);
+        return gitStore.pull()
+                .thenApply(PullResult::toString)
+                .exceptionally(e -> {
+                    log.error("Failed to git pull", e);
+                    return e.toString();
+                });
     }
 }

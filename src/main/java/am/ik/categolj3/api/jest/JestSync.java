@@ -35,7 +35,8 @@ public class JestSync {
 
     @EventListener
     public void handleBulkDelete(EntryEvictEvent.Bulk e) {
-        if (eventManager.getState() == AppState.INITIALIZED || jestProperties.isInit()) {
+        AppState state = eventManager.getState();
+        if (state == AppState.INITIALIZED || jestProperties.isInit()) {
             if (log.isInfoEnabled()) {
                 log.info("Bulk delete ({})", e.getEvents().size());
             }
@@ -45,12 +46,17 @@ public class JestSync {
                 log.warn("Failed to bulk delete", ex);
                 e.getEvents().forEach(eventManager::registerEntryEvictEvent);
             }
+        } else {
+            if (log.isInfoEnabled()) {
+                log.info("Skip to bulk delete (status={},jest.init={})", state, jestProperties.isInit());
+            }
         }
     }
 
     @EventListener
     public void handleBulkUpdate(EntryPutEvent.Bulk e) {
-        if (eventManager.getState() == AppState.INITIALIZED || jestProperties.isInit()) {
+        AppState state = eventManager.getState();
+        if (state == AppState.INITIALIZED || jestProperties.isInit()) {
             if (log.isInfoEnabled()) {
                 log.info("Bulk update ({})", e.getEvents().size());
             }
@@ -59,6 +65,10 @@ public class JestSync {
             } catch (Exception ex) {
                 log.warn("Failed to bulk update", ex);
                 e.getEvents().forEach(eventManager::registerEntryPutEvent);
+            }
+        } else {
+            if (log.isInfoEnabled()) {
+                log.info("Skip to bulk update (status={},jest.init={})", state, jestProperties.isInit());
             }
         }
     }
