@@ -15,11 +15,13 @@
  */
 package am.ik.categolj3.api.git;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class GitSyncScheduler {
 
     @Autowired
@@ -27,8 +29,7 @@ public class GitSyncScheduler {
 
     @Scheduled(cron = "0 0/30 * * * *")
     public void onSchedule() {
-        gitStore.pull().thenAccept(r -> {
-            gitStore.forceRefreshAll();
-        });
+        gitStore.pull()
+                .thenAccept(r -> log.info("Scheduled git pull is finished {}", r));
     }
 }
