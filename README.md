@@ -8,7 +8,7 @@ CategoLJ3 API Server is REST API Server for Blog Application
 <dependency>
     <groupId>am.ik.categolj3</groupId>
     <artifactId>categolj3-api</artifactId>
-    <version>1.0.0.M5</version>
+    <version>1.0.0.M6</version>
 </dependency>
 ```
 
