@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2015-2017 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,6 @@ import java.util.Map;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class FrontMatter implements Serializable {
     private String title;
 
@@ -47,6 +45,17 @@ public class FrontMatter implements Serializable {
     private static final Yaml yaml = new Yaml();
 
     static final String SEPARATOR = "---";
+
+    public FrontMatter() {
+    }
+
+    public FrontMatter(String title, List<String> tags, List<String> categories, OffsetDateTime date, OffsetDateTime updated) {
+        this.title = title;
+        this.tags = tags;
+        this.categories = categories;
+        this.date = date;
+        this.updated = updated;
+    }
 
     @SuppressWarnings({"unchecked"})
     public static FrontMatter loadFromYamlString(String string) {
